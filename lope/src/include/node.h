@@ -10,34 +10,41 @@ typedef struct node_t node_t;
 typedef struct parser_t parser_t;
 // Nodetype enums
 typedef enum {
-    TYPED_ASSIGN,
-    ASSIGN,
-    PROGRAM,
-    STATEMENT,
-    EQUALITY,
-    INEQUALITY,
-    ADDSUB,
-    MULDIV,
-    UNARY,
-    AND,
-    OR,
-    IF,
-    ELSEIF,
-    WHILE,
-    FOR,
+    ARITHMETIC_GRAMMAR,
+    ASSIGN_STMTS_GRAMMAR,
+    BOOLEAN_GRAMMAR,
+    CON_STMTS,
+    CONST,
+    DATA_TYPE,
+    OPERATORS,
+    TERMINAL,
+    DEC_STMTS_GRAMMAR,
     ERROR,
-    EMPTY,
-    SCAN,
-    PRINT_STR,
-    PRINT_VAL,
-    PRINT_EXP,
-    DECLARATION,
-    ATOM
+    HABANG_GRAMMAR,
+    IDENTIFIER,
+    ITER_STMTS_GRAMMAR,
+    KEYWORD,
+    KUNDI_GRAMMAR,
+    KUNG_GRAMMAR,
+    LAHAD_GRAMMAR,
+    LOGICAL_GRAMMAR,
+    PARA_GRAMMAR,
+    PROGRAM_GRAMMAR,
+    RELATIONAL_GRAMMAR,
+    SAKALI_GRAMMAR,
+    KUHA_GRAMMAR,
+    STATEMENT_GRAMMAR,
+    STATEMENTS_GRAMMAR,
+    TEMP_DEC,
+    UNARY_GRAMMAR
 } nodeType;
 typedef struct {
-    node_t **statements;
+    node_t **stmts;
     int stmtCount;
-} statementNode;
+} statementsNode;
+typedef struct {
+    node_t *stmt;
+} statementNode, kundiNode;
 typedef struct {
     node_t *statement;
 } programNode;
@@ -52,12 +59,12 @@ typedef struct {
     node_t *variable;
     node_t *condition;
     node_t *iterator;
-    node_t *statements;
-} forNode;
+    node_t *stmts;
+} paraNode;
 typedef struct {
     node_t *expr;
-    node_t *statements;
-} whileNode;  // *WHILE
+    node_t *stmts;
+} habangNode;  // *WHILE
 typedef struct {
     node_t *operation;
     node_t *token;
@@ -66,7 +73,7 @@ typedef struct {
     node_t *left;       // expr
     node_t *operation;  // tokenNode
     node_t *right;      // expr
-} comparisonNode;
+} expressionNode;
 typedef struct {
     node_t *dataType;
     node_t *identifier;
@@ -80,24 +87,23 @@ typedef struct {
 } assgnNode;
 typedef struct {
     node_t *condition;
-    node_t *statements;
-    node_t *elseifns;
-    node_t *elsestmt;
-} ifNode;
+    node_t *stmts;
+    node_t *sakali;
+    node_t *kundi;
+} kungNode;
 typedef struct {
     node_t *condition;
-    node_t *statements;
+    node_t *stmts;
     node_t *nextelseif;
-} elseifNode;
-
+} sakaliNode;
 typedef struct {
     node_t *dataType;
     node_t *identifier;
-} initializationNode;
+} noValueDeclarationNode;
 typedef struct {
     node_t *stringFormat;
     node_t *varAddress;
-} scanNode;
+} kuhaNode;
 typedef struct {
     node_t *stringValue;
 } printStringNode;
@@ -107,24 +113,26 @@ typedef struct {
 } printValueNode;
 typedef struct {
     node_t *stringFormat;
-    node_t *expression;
+    node_t *expr;
 } printExp;
 
 typedef union {
     programNode *program;
+    statementsNode *stmts;
     statementNode *stmt;
-    whileNode *whl;
-    forNode *fr;
+    habangNode *_habang;
+    paraNode *_para;
     assgnNode *assgn;
-    comparisonNode *comp;
+    expressionNode *_expression;
     unaryNode *unary;
     tokenNode *atom;
     errorNode *error;
-    ifNode *f;
-    elseifNode *elif;
-    initializationNode *decStmnt;
-    declarationNode *t_Assgn;
-    scanNode *input;
+    kungNode *_kung;
+    sakaliNode *_sakali;
+    kundiNode *_kundi;
+    noValueDeclarationNode *_declaration;
+    declarationNode *declaration;
+    kuhaNode *input;
     printStringNode *printString;
     printValueNode *printValue;
     printExp *printExpression;
@@ -147,44 +155,48 @@ node_t *createNode();
  * @param errorMsg message
  * @return errorNode
  */
-node_t *errorN(parser_t *parser, char *errorMsg);
+node_t *error(parser_t *parser, char *errorMsg);
 
-// program = statements
-node_t *programN(parser_t *parser);
-/**
- * @brief returns an array of statements, used in nodes:
- *        [program, while, for, if, else, elseif]
- *
- * @param parser
- * @param parent used for identifying if it is a block or the main program
- * @return node_t**
- */
-node_t *stmtN(parser_t *parser, node_t *parent);
-node_t *whileN(parser_t *parser);
-node_t *forN(parser_t *parser);
-node_t *ifN(parser_t *parser);
-node_t *elseifN(parser_t *parser);
-node_t *initializationN(parser_t *parser);
-node_t *declarationN(parser_t *parser);
-node_t *scanN(parser_t *parser);
-node_t *printN(parser_t *parser);
-// assign = [TOKEN_TYPE] [TOKEN_ID] [TOKEN_ANY_ASSIGN] <comparison> [TOKEN_SEMI]
-node_t *assgnN(parser_t *parser);
-// comparison = inequality ([== | !=] inequality)*
-node_t *orN(parser_t *parser);
-node_t *andN(parser_t *parser);
-node_t *equalityN(parser_t *parser);
-// inequality = addsub ([+ | -] addsub)*
-node_t *inequalityN(parser_t *parser);
-// addsub = muldiv ([* | /] muldiv)*
-node_t *addsubN(parser_t *parser);
-// muldiv = unary ([! | -]unary)*
-node_t *muldivN(parser_t *parser);
-// unary = literal (literal)*
+// program = stmts
+node_t *program(parser_t *parser);
+node_t *stmts(parser_t *parser, node_t *parent);
+node_t *stmt(parser_t *parser);
+
+node_t *iterative_stmt(parser_t *parser);
+node_t *habang(parser_t *parser);
+node_t *para(parser_t *parser);
+
+node_t *conditional_stmt(parser_t *parser);
+node_t *kung(parser_t *parser);
+node_t *sakali(parser_t *parser);
+node_t *kundi(parser_t *parser);
+
+node_t *declaration_stmt(parser_t *parser);
+node_t *assign_stmt(parser_t *parser);
+
+node_t *io_stmts(parser_t *parser);
+node_t *kuha(parser_t *parser);
+node_t *lahad(parser_t *parser);
+
+node_t *expr(parser_t *parser);
+
+node_t *bool_op(parser_t *parser);
+node_t *logical_op(parser_t *parser);
+node_t *relational_op(parser_t *parser);
+
+node_t *arithmetic_op(parser_t *parser);
 node_t *negateN(parser_t *parser);
-node_t *unaryN(parser_t *parser);
-// literal = atom | comparison
+node_t *unary_op(parser_t *parser);
+
 node_t *literalTerm(parser_t *parser);
+
+node_t *_const(parser_t *parser);
+node_t *_identifier(parser_t *parser);
+node_t *_data_type(parser_t *parser);
+node_t *_operators(parser_t *parser);
+
+int data_type(parser_t *parser);
+int assign_op(parser_t *parser);
 
 // Generates the token nodes
 
@@ -193,13 +205,6 @@ node_t *literalTerm(parser_t *parser);
  * @param parser
  * @return atomNode
  */
-node_t *atomN(parser_t *parser);
-/**
- * @brief generates the token node, doesn't use parserAdvance, useful when
- * parser_match() is used
- * @param parser
- * @return atomNode
- */
-node_t *atomN_from_previous(parser_t *parser);
+node_t *_token(parser_t *parser);
 
 #endif

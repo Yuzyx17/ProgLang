@@ -4,6 +4,9 @@
 #include "fileHandler.h"
 #include "node.h"
 
+#define true 1
+#define false 0
+
 // Parser struct
 struct parser_t {
     token_t **toks;  // token stream
@@ -24,6 +27,7 @@ void exec_parser(parser_t *parser);
  * @brief advances the cursor
  * */
 void parser_advance(parser_t *parser);
+void parser_recede(parser_t *parser);
 /**
  * @brief generates an atom node that advances when match one of the tokens
  *
@@ -60,9 +64,9 @@ token_t *parser_previous_peek(parser_t *parser);
  *
  * @param token_to_match type of token
  * */
-int match(parser_t *parser, type token_to_match);
+int match(parser_t *parser, type token_to_match, node_t *node);
 /**
- * @brief used for matching nodes, useful for statements that needs logical
+ * @brief used for matching nodes, useful for stmts that needs logical
  * evaluation such as while who doesn't want an addition, though it works in
  * other languages
  * @param node
@@ -71,7 +75,7 @@ int match(parser_t *parser, type token_to_match);
  */
 node_t *match_node(node_t *node, parser_t *parser, nodeType node_type);
 /**
- * @brief used for matching nodes, useful for statements that needs logical
+ * @brief used for matching nodes, useful for stmts that needs logical
  * evaluation such as while who doesn't want an addition, though it works in
  * other languages
  * @param node
@@ -99,9 +103,10 @@ int check(parser_t *parser, type token_to_match);
  * @brief checks only doesn't consume and doesn't advance
  * @param token_to_match type of token
  */
-int check_Tokens(parser_t *parser, int count, ...);
+int check_tokens(parser_t *parser, int count, ...);
 // check if eoF
 int nullCursor(parser_t *parser);
+int endOfTokenList(parser_t *parser);
 
 // For traversing/semantic checking
 
@@ -110,14 +115,7 @@ int nullCursor(parser_t *parser);
  *
  * @param node
  */
-void display_grammar(node_t *node);
-/**
- * @brief traverses the statement node, useful for traversing the tree
- * statement[x] type must be considered as a statement based on grammar rule
- *
- * @param statements
- */
-void traverse_statements(node_t **statements, int count, int depth);
+void grammarOf(node_t *node, int depth);
 /**
  * @brief traverses a node
  *

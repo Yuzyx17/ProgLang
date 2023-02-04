@@ -1,9 +1,10 @@
 #ifndef ADDFILE_H
 #define ADDFILE_H
 
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+
 #include "lexer.h"
 
 extern FILE *input_ptr, *output_ptr;

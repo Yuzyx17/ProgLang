@@ -6,7 +6,7 @@ token_t *init_token(int type, char *value, int l, int lc)
 {
 
     // allocate a memory for the token
-    token_t *token = calloc(1, sizeof(struct TOKEN_STRUCT));
+    token_t *token = calloc(1, sizeof(struct STRUCT));
     // whatever the type of the token, assign it as its own
     token->type = type;
     // whatever the character value, assign it as the token value

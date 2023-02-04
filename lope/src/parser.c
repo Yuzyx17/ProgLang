@@ -1,10 +1,10 @@
 #include "include/parser.h"
 
 void exec_parser(parser_t *parser) {
-    node_t *program = programN(parser);
-    traverse(program, 0);
+    node_t *node = program(parser);
+    grammarOf(node, 0);
     free(parser);
-    free(program);
+    free(node);
     printf("\nSuccess");
 }
 parser_t *parser_init(token_t **tokens) {
@@ -19,13 +19,22 @@ void parser_advance(parser_t *parser) {
     parser->i++;
     parser->tok = parser->toks[parser->i];
 }
+void parser_recede(parser_t *parser) {
+    parser->i--;
+    parser->tok = parser->toks[parser->i];
+}
 int nullCursor(parser_t *parser) {
     if (parser->tok == (void *)0) {
-        return 1;
+        return true;
     }
-    return 0;
+    return false;
 }
-
+int endOfTokenList(parser_t *parser) {
+    if (sizeof(parser->toks) / sizeof(parser->tok) >= parser->i) {
+        return true;
+    }
+    return false;
+}
 token_t *parser_peek(parser_t *parser) { return parser->tok; }
 token_t *parser_advance_peek(parser_t *parser) {
     token_t *token = parser->toks[parser->i + 1];
@@ -38,11 +47,11 @@ token_t *parser_previous_peek(parser_t *parser) {
 
 node_t *parser_match(parser_t *parser, type token_to_match) {
     if (nullCursor(parser)) {
-        return errorN(parser, "Token Mismatch");
+        return error(parser, "Token Mismatch");
     } else if (parser->tok->type == token_to_match) {
-        return atomN(parser);
+        return _token(parser);
     } else {
-        return errorN(parser, "Token Mismatch");
+        return error(parser, "Token Mismatch");
     }
 }
 node_t *parser_match_tokens(parser_t *parser, int count, ...) {
@@ -52,20 +61,19 @@ node_t *parser_match_tokens(parser_t *parser, int count, ...) {
     for (int i = 0; i < count; i++) {
         tok = va_arg(args, type);
         if (nullCursor(parser)) {
-            return errorN(parser, "End of Line");
+            return error(parser, "End of Line");
         } else if (parser->tok->type == tok) {
-            parser_advance(parser);
-            return atomN_from_previous(parser);
+            return _token(parser);
         }
     }
-    return errorN(parser, "Token Mismatch or Missing");
+    return error(parser, "Token Mismatch or Missing");
 }
 
 node_t *match_node(node_t *node, parser_t *parser, nodeType node_type) {
     if (node->type == node_type) {
         return node;
     }
-    return errorN(parser, "Inspection error");
+    return error(parser, "Inspection error");
 }
 node_t *match_nodes(node_t *node, parser_t *parser, int count, ...) {
     va_list args;
@@ -74,32 +82,34 @@ node_t *match_nodes(node_t *node, parser_t *parser, int count, ...) {
     for (int i = 0; i < count; i++) {
         tok = va_arg(args, int);
         if (node == NULL) {
-            return errorN(parser, "Missing expression");
+            return error(parser, "Missing expression");
         } else if (node->type == tok) {
             return node;
         }
     }
-    return 0;
+    return false;
 }
 
-int match(parser_t *parser, type token_to_match) {
+int match(parser_t *parser, type token_to_match, node_t *node) {
     if (nullCursor(parser)) {
-        return 0;
+        free(node);
+        return false;
     } else if ((parser_peek(parser)->type == token_to_match)) {
         // printf("DELT: %s\n", parser_peek(parser)->value);
         parser_advance(parser);
-        return 1;
+        return true;
     } else {
-        return 0;
+        free(node);
+        return false;
     }
 }
 int check(parser_t *parser, type token_to_match) {
     if (nullCursor(parser)) {
-        return 0;
+        return false;
     } else if ((parser_peek(parser)->type == token_to_match)) {
-        return 1;
+        return true;
     } else {
-        return 0;
+        return false;
     }
 }
 
@@ -110,237 +120,116 @@ int match_tokens(parser_t *parser, int count, ...) {
     for (int i = 0; i < count; i++) {
         tok = va_arg(args, int);
         if (nullCursor(parser)) {
-            return 0;
-        } else if ((parser_peek(parser)->type == tok)) {
+            return false;
+        } else if ((parser->tok->type == tok)) {
             // printf("DELT: %s\n", parser_peek(parser)->value);
             parser_advance(parser);
-            return 1;
+            return true;
         }
     }
-    return 0;
+    return false;
 }
-int check_Tokens(parser_t *parser, int count, ...) {
+int check_tokens(parser_t *parser, int count, ...) {
     va_list args;
     va_start(args, count);
     int tok;
     for (int i = 0; i < count; i++) {
         tok = va_arg(args, int);
         if (nullCursor(parser)) {
-            return 0;
+            return false;
         } else if ((parser_peek(parser)->type == tok)) {
-            return 1;
+            return true;
         }
     }
-    return 0;
+    return false;
 }
 
-void traverse_statements(node_t **statements, int count, int depth) {
-    if (statements[0] != NULL) {
-        printf("\n<statements> => <statement>\n");
-        printf(
-            "<statement> => <expr> | <dec_stmts> | <assign_stmts> | "
-            "<con_stmts> |<iter_stmts> | <io_stmts>\n");
-    }
-    for (int x = 0; x < count || x > 1000; x++) {
-        switch (statements[x]->type) {
-            case WHILE:
-                printf("<iterative_stmts> => <habang>\n");
-                printf("<habang> => habang (<expression>) {<statements>}");
-                traverse(statements[x]->value.whl->expr, depth + 1);
-                traverse(statements[x]->value.whl->statements, depth + 1);
-                break;
-            case ASSIGN:
-                printf("<assgn_stmts> => ");
-                traverse(statements[x], depth);
-                if (statements[x]->value.assgn->expr->type == ATOM) {
-                    printf(";");
-                }
-                printf("\n\n");
-                break;
-            case DECLARATION:
-                printf("<dec_stmts> => ");
-                traverse(statements[x], depth);
-                printf(";\n\n");
-                break;
-            case TYPED_ASSIGN:
-                printf("<dec_stmts> => ");
-                traverse(statements[x], depth);
-                if (statements[x]->value.t_Assgn->expr->type == ATOM) {
-                    printf(";");
-                }
-                printf("\n\n");
-                break;
-            case IF:
-                printf("<cond_stmts> => <kung_stmt>\n");
-                printf("<kung_stmt> => kung(<expression>){<statements>}");
-                traverse(statements[x]->value.f->condition, depth + 1);
-                traverse(statements[x]->value.f->statements, depth + 1);
-                traverse(statements[x]->value.f->elseifns, depth + 1);
-                if (statements[x]->value.f->elsestmt != NULL) {
-                    printf("<cond_stmts> => <kundi_stmt>\n");
-                    printf("<kundi_stmt> => kundi{<statements>}\n");
-                    traverse(statements[x]->value.f->elsestmt, depth + 2);
-                }
-                break;
-            case FOR:
-                printf("<iterative_stmts> => <para>\n");
-                printf(
-                    "<para> => "
-                    "para(<expression>;<expression>;<expression>){<statements>}"
-                    "\n");
-                printf("<expression> => ");
-                traverse(statements[x]->value.fr->variable, depth + 1);
-                traverse(statements[x]->value.fr->condition, depth + 1);
-                traverse(statements[x]->value.fr->iterator, depth + 1);
-                traverse(statements[x]->value.fr->statements, depth + 1);
-                break;
-            case ERROR:
-                traverse(statements[x], depth + 1);
-                printf("\n");
-                break;
-            case ATOM:
-                printf("<%s>\n", statements[x]->value.atom->nodeToken->value);
-                break;
-            case SCAN:
-                printf("<io_stmts> => <kuha>\n");
-                printf("<kuha> => kuha( ");
-                traverse(statements[x], depth);
-                printf(");\n\n");
-                break;
-            case PRINT_STR:
-                printf("<io_stmts> => <lahad>\n");
-                printf("<lahad> => lahad (");
-                if (statements[x]->value.printString->stringValue->type != ATOM)
-                    printf(" <expression> );");
-                traverse(statements[x], depth);
-                if (statements[x]->value.printString->stringValue->type == ATOM)
-                    printf(");\n\n");
-                break;
-            case PRINT_VAL:
-                printf("<io_stmts> => <lahad>\n");
-                printf("<lahad> => lahad (");
-                traverse(statements[x], depth);
-                printf(");\n\n");
-                break;
-            case PRINT_EXP:
-                printf("<io_stmts> => <lahad>\n");
-                printf("<lahad> => lahad (");
-                traverse(statements[x]->value.printExpression->stringFormat,
-                         depth);
-                printf(", <expression>);");
-                traverse(statements[x]->value.printExpression->expression,
-                         depth);
-                printf("\n\n");
-                break;
-            case UNARY:
-                printf("\n<expression> => ");
-                traverse(statements[x]->value.unary->token, depth);
-                traverse(statements[x]->value.unary->operation, depth);
-                printf(";");
-                break;
-            default:
-                break;
-        }
-    }
-    printf("\n");
-}
-void traverse(node_t *node, int depth) {
+void grammarOf(node_t *node, int depth) {
     if (node == NULL) {
         return;
     }
     switch (node->type) {
-        case PROGRAM:
-            printf("\n\n<program> => <statements>");
-            traverse(node->value.program->statement, depth + 1);
+        case PROGRAM_GRAMMAR:
+            grammarOf(node->value.program->statement, depth);
             break;
-        case STATEMENT:
-            traverse_statements(node->value.stmt->statements,
-                                node->value.stmt->stmtCount, depth + 2);
+        case STATEMENTS_GRAMMAR:
+            for (int x = 0; x < node->value.stmts->stmtCount || x > 1000; x++) {
+                grammarOf(node->value.stmts->stmts[x], depth);
+            }
+        case STATEMENT_GRAMMAR:
+            grammarOf(node->value.stmt->stmt, depth);
+            break;
+        case ASSIGN_STMTS_GRAMMAR:
+            grammarOf(node->value.assgn->identifier, depth);
+            grammarOf(node->value.assgn->assignType, depth);
+            grammarOf(node->value.assgn->expr, depth);
+            printf("\n");
+            break;
+        case DEC_STMTS_GRAMMAR:
+            grammarOf(node->value.declaration->dataType, depth);
+            grammarOf(node->value.declaration->identifier, depth);
+            grammarOf(node->value.declaration->assignType, depth);
+            grammarOf(node->value.declaration->expr, depth);
+            printf("\n");
+            break;
+        case TERMINAL:
+        case OPERATORS:
+        case CONST:
+        case IDENTIFIER:
+            printf("<%s> ", node->value.atom->nodeToken->value);
+            break;
+        case HABANG_GRAMMAR:
+            printf("<habang> => ");
+            grammarOf(node->value._habang->expr, depth);
+            grammarOf(node->value._habang->stmts, depth);
+            printf("\n");
+            break;
+        case KUNG_GRAMMAR:
+            printf("<kung> => ");
+            grammarOf(node->value._kung->condition, depth);
+            grammarOf(node->value._kung->stmts, depth);
+            grammarOf(node->value._kung->sakali, depth);
+            grammarOf(node->value._kung->kundi, depth);
+            printf("\n");
+            break;
+        case SAKALI_GRAMMAR:
+            printf("\n<sakal> => ");
+            grammarOf(node->value._sakali->condition, depth);
+            grammarOf(node->value._sakali->stmts, depth);
+            grammarOf(node->value._sakali->nextelseif, depth);
+            printf("\n");
+            break;
+        case KUNDI_GRAMMAR:
+            printf("\n<kundi> => ");
+            grammarOf(node->value._kundi->stmt, depth);
+            printf("\n");
+            break;
+        case PARA_GRAMMAR:
+            printf("<para> => ");
+            grammarOf(node->value._para->variable, depth);
+            grammarOf(node->value._para->condition, depth);
+            grammarOf(node->value._para->iterator, depth);
+            grammarOf(node->value._para->stmts, depth);
+            printf("\n");
+            break;
+        case LOGICAL_GRAMMAR:
+        case RELATIONAL_GRAMMAR:
+        case ARITHMETIC_GRAMMAR:
+            grammarOf(node->value._expression->left, depth);
+            grammarOf(node->value._expression->operation, depth);
+            grammarOf(node->value._expression->right, depth);
+            break;
+        case UNARY_GRAMMAR:
+            grammarOf(node->value.unary->token, depth);
+            grammarOf(node->value.unary->operation, depth);
             break;
         case ERROR:
-            printf("\nError: %s in [Line: %d, Pos: %d] Token:(\'%s\')\n",
-                   node->value.error->error, node->value.error->token->lpos,
+            printf("%s in Line:%d Pos:%d At (%s)\n", node->value.error->error,
+                   node->value.error->token->lpos,
                    node->value.error->token->cpos,
                    node->value.error->token->value);
-            return;
-        case ATOM:
-            printf(" <%s> ", token_type[node->value.atom->nodeToken->type]);
-            return;
-        case ELSEIF:
-            printf("<cond_stmts> => <sakali_stmt>\n");
-            printf("<sakali_stmt> => sakali (<expression>) {<statements>}");
-            if (node->value.elif == NULL)
-                return;
-            traverse(node->value.elif->condition, depth + 1);
-            printf("\n");
-            traverse(node->value.elif->statements, depth + 1);
-            traverse(node->value.elif->nextelseif, depth + 1);
-            break;
-        case TYPED_ASSIGN:
-            traverse(node->value.t_Assgn->dataType, depth + 1);
-            traverse(node->value.t_Assgn->identifier, depth + 1);
-            traverse(node->value.t_Assgn->assignType, depth + 1);
-            if (node->value.t_Assgn->expr->type != ATOM) {
-                printf("<expression>");
-                printf(";");
-            }
-            traverse(node->value.t_Assgn->expr, depth + 1);
-            break;
-        case ASSIGN:
-            traverse(node->value.assgn->identifier, depth + 1);
-            traverse(node->value.assgn->assignType, depth + 1);
-            if (node->value.assgn->expr->type != ATOM) {
-                printf("<expression>");
-                printf(";");
-            }
-            traverse(node->value.assgn->expr, depth + 1);
-            break;
-        case DECLARATION:
-            traverse(node->value.decStmnt->dataType, depth + 1);
-            traverse(node->value.decStmnt->identifier, depth + 1);
-            break;
-        case AND:
-        case OR:
-        case EQUALITY:
-        case INEQUALITY:
-        case ADDSUB:
-        case MULDIV:
-            printf("\n<expression> => ");
-            if (node->value.comp->left->type != ATOM)
-                printf(" <expression>");
-            traverse(node->value.comp->left, depth + 1);
-            traverse(node->value.comp->operation, depth + 1);
-            if (node->value.comp->right->type != ATOM)
-                printf(" <expression>");
-            traverse(node->value.comp->right, depth + 1);
-            break;
-        case UNARY:
-            printf("\n<expression> =>");
-            if (node->value.unary->token->type != ATOM)
-                printf(" <expression>");
-            traverse(node->value.unary->token, depth + 1);
-            traverse(node->value.unary->operation, depth + 1);
-            break;
-        case SCAN:
-            traverse(node->value.input->stringFormat, depth + 1);
-            printf(",");
-            traverse(node->value.input->varAddress, depth + 1);
-            break;
-        case PRINT_STR:
-            traverse(node->value.printString->stringValue, depth + 1);
-            break;
-        case PRINT_VAL:
-            traverse(node->value.printValue->stringFormat, depth + 1);
-            printf(",");
-            traverse(node->value.printValue->identifier, depth + 1);
-            break;
-        case PRINT_EXP:
-            traverse(node->value.printExpression->stringFormat, depth + 1);
-            printf(",");
-            traverse(node->value.printExpression->expression, depth + 1);
-            break;
         default:
-            printf("Hello ssworld\n");
+            break;
     }
 }
 void indent(int indent_count) {
