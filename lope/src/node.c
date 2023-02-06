@@ -69,7 +69,22 @@ node_t *stmt(parser_t *parser) {
     }
     return node;
 }
-node_t *expr(parser_t *parser) { return logical_op(parser); }
+node_t *expr(parser_t *parser) {
+    node_t *left = createNode();
+    if (parser->tok->type == CONST)
+        left = _const(parser);
+    else if (parser->tok->type == IDENTIFIER)
+        left = _identifier;
+    else if (parser->tok->type == LPAREN) {
+        parser_advance(parser);
+        left = expr;
+    } else if (parser->tok->type == RPAREN) {
+    } else {
+        return left;
+    }
+    if (parser) {
+    }
+}
 
 node_t *iterative_stmt(parser_t *parser) {
     switch (parser->tok->type) {
@@ -545,6 +560,86 @@ int data_type(parser_t *parser) {
     }
 }
 int assign_op(parser_t *parser) {
+    switch (parser->tok->type) {
+        case EQUALS:
+            return 1;
+        case ADD_ASGN:
+            return 1;
+        case SUB_ASGN:
+            return 1;
+        case MULT_ASGN:
+            return 1;
+        case INTDIV_ASGN:
+            return 1;
+        case DIV_ASGN:
+            return 1;
+        case MOD_ASGN:
+            return 1;
+        default:
+            return 0;
+    }
+}
+int bool_op(parser_t *parser) {
+    switch (parser->tok->type) {
+        case EQUALS:
+            return 1;
+        case ADD_ASGN:
+            return 1;
+        case SUB_ASGN:
+            return 1;
+        case MULT_ASGN:
+            return 1;
+        case INTDIV_ASGN:
+            return 1;
+        case DIV_ASGN:
+            return 1;
+        case MOD_ASGN:
+            return 1;
+        default:
+            return 0;
+    }
+}
+int relational_op(parser_t *parser) {
+    switch (parser->tok->type) {
+        case EQUALS:
+            return 1;
+        case ADD_ASGN:
+            return 1;
+        case SUB_ASGN:
+            return 1;
+        case MULT_ASGN:
+            return 1;
+        case INTDIV_ASGN:
+            return 1;
+        case DIV_ASGN:
+            return 1;
+        case MOD_ASGN:
+            return 1;
+        default:
+            return 0;
+    }
+}
+int logical_op(parser_t *parser) {
+    switch (parser->tok->type) {
+        case EQUALS:
+            return 1;
+        case ADD_ASGN:
+            return 1;
+        case SUB_ASGN:
+            return 1;
+        case MULT_ASGN:
+            return 1;
+        case INTDIV_ASGN:
+            return 1;
+        case DIV_ASGN:
+            return 1;
+        case MOD_ASGN:
+            return 1;
+        default:
+            return 0;
+    }
+}
+int arithemetic_op(parser_t *parser) {
     switch (parser->tok->type) {
         case EQUALS:
             return 1;

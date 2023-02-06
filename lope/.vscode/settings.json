@@ -3,6 +3,7 @@
     "parser.h": "c",
     "type_traits": "c",
     "cmath": "c",
-    "*.tcc": "c"
+    "*.tcc": "c",
+    "compare": "c"
   }
 }
