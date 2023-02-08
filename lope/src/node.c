@@ -8,19 +8,25 @@ node_t *createNode() {
     }
     return node;
 }
+// <program> => <stmts>
 node_t *program(parser_t *parser) {
+    // <program>
     node_t *node = createNode();
     node->type = PROGRAM_GRAMMAR;
     node->value.program = (programNode *)calloc(1, sizeof(programNode));
+    // <program> => <stmts>
     node->value.program->statement = stmts(parser, node);
     return node;
 }
+// <stmts> => <stmt> | <stmt> <stmts>
 node_t *stmts(parser_t *parser, node_t *parent) {
+    //<stmts>
     node_t *node = createNode();
     node->type = STATEMENTS_GRAMMAR;
     node->value.stmts = (statementsNode *)calloc(1, sizeof(statementsNode));
     node->value.stmts->stmts = (node_t **)calloc(1, sizeof(nodeValue *));
     node->value.stmts->stmtCount = 0;
+    // <stmts> => <stmt> <stmts>
     while (!nullCursor(parser)) {
         if (parent->type != PROGRAM_GRAMMAR && check(parser, RBRACE)) {
             return node;
@@ -30,6 +36,7 @@ node_t *stmts(parser_t *parser, node_t *parent) {
                 return node;
             continue;
         }
+
         node->value.stmts->stmts[node->value.stmts->stmtCount] = stmt(parser);
         node->value.stmts->stmtCount++;
         node->value.stmts->stmts = (node_t **)realloc(
@@ -38,10 +45,13 @@ node_t *stmts(parser_t *parser, node_t *parent) {
     }
     return node;
 }
+// <stmt> => <expr> | <dec_stmts> | <assign_stmts> | <con_stmts> | <iter_stmts>
+// | <io_stmts>
 node_t *stmt(parser_t *parser) {
     node_t *node = createNode();
     node->type = STATEMENT_GRAMMAR;
     node->value.stmt = (statementNode *)calloc(1, sizeof(statementNode));
+    // <stmt> => <dec_stmts>
     if (data_type(parser)) {
         node->value.stmt->stmt = declaration_stmt(parser);
         if (check(parser, SEMI))
@@ -50,7 +60,9 @@ node_t *stmt(parser_t *parser) {
             node->value.stmt->stmt =
                 error(parser, "[Declaration] Missing Semi-colon");
         }
-    } else if (check(parser, ID)) {
+    }
+    // <stmt> => <assign_stmts>
+    else if (check(parser, ID)) {
         node->value.stmt->stmt = assign_stmt(parser);
         if (check(parser, SEMI))
             parser_advance(parser);
@@ -58,17 +70,24 @@ node_t *stmt(parser_t *parser) {
             node->value.stmt->stmt =
                 error(parser, "[Assignment] Missing Semi-colon");
         }
-    } else if (check(parser, KUNG)) {
+    }
+    // <stmt> => <con_stmts>
+    else if (check(parser, KUNG)) {
         node->value.stmt->stmt = conditional_stmt(parser);
-    } else if (check_tokens(parser, 2, KUHA, LAHAD)) {
+    }
+    // <stmt> => <io_stmts>
+    else if (check_tokens(parser, 2, KUHA, LAHAD)) {
         node->value.stmt->stmt = io_stmts(parser);
-    } else if (check_tokens(parser, 2, HABANG, PARA)) {
+    }
+    // <stmt> => <iter_stmts>
+    else if (check_tokens(parser, 2, HABANG, PARA)) {
         node->value.stmt->stmt = iterative_stmt(parser);
     } else {
         node->value.stmt->stmt = error(parser, "[Program] Unexpected Token");
     }
     return node;
 }
+
 node_t *expr(parser_t *parser) { return logical_op(parser); }
 
 node_t *iterative_stmt(parser_t *parser) {
