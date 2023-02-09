@@ -5,6 +5,7 @@
 /=
 %=
 ~=
+
 +
 -
 *
@@ -12,19 +13,23 @@
 %
 ~
 ^
+
+!
 +
 -
 ++
 --
+
 ==
 !=
 >
 <
 >=
 <=
-!
+
 ||
 &&
+
 lahad
 kuha
 totoo
@@ -32,22 +37,17 @@ mali
 wala
 bolyan
 linya
-numero
 num
-puntonumero
-punto
-doblenumero
 doble
-karakter
+punto
 kar
 kung
 sakali
 kundi
 tigil
-tuloy
 habang
+tuloy
 para
-depinisyon
 dep
 angkat
 ibura
@@ -57,22 +57,8 @@ wakas
 mula
 balik
 
-at
-o 
 nasa 
 lahat
-
-akter
-ero
-numero
-numero
-inisyon
-
-,
-;
-()
-[]
-{}
 
 numero CONST eunice_number = 12;
 bolyan CONST eunice_bool = totoo;
@@ -81,10 +67,25 @@ kar CONST eunice_bool = 'j';
 numero edad = 21;
 punto CONST numero = 12.2;
 
+akter
+ero
+numero
+numero
+inisyon
+
 # hello world
 #* haha 
 second word
 *#
+
+,
+;
+(
+)
+[
+]
+{
+}
 
 int s8s
 
@@ -108,5 +109,4 @@ ibura(pangalan_ko);
 angkat mula "stdlib.lp";
 
 linya p2p = "PUP";
-
 
