@@ -26,7 +26,9 @@ typedef enum {
     KEYWORD,
     KUNDI_GRAMMAR,
     KUNG_GRAMMAR,
-    LAHAD_GRAMMAR,
+    LAHAD_GRAMMAR_A,
+    LAHAD_GRAMMAR_B,
+    LAHAD_GRAMMAR_C,
     LOGICAL_GRAMMAR,
     PARA_GRAMMAR,
     PROGRAM_GRAMMAR,
@@ -132,7 +134,7 @@ typedef union {
     kundiNode *_kundi;
     noValueDeclarationNode *_declaration;
     declarationNode *declaration;
-    kuhaNode *input;
+    kuhaNode *kuha;
     printStringNode *printString;
     printValueNode *printValue;
     printExp *printExpression;
@@ -180,15 +182,14 @@ node_t *lahad(parser_t *parser);
 
 node_t *expr(parser_t *parser);
 
-node_t *bool_op(parser_t *parser);
-node_t *logical_op(parser_t *parser);
-node_t *relational_op(parser_t *parser);
+node_t *logical(parser_t *parser);
+node_t *relational(parser_t *parser);
 
-node_t *arithmetic_op(parser_t *parser);
-node_t *negateN(parser_t *parser);
-node_t *unary_op(parser_t *parser);
+node_t *arithmetic(parser_t *parser);
+node_t *negate(parser_t *parser);
+node_t *unary(parser_t *parser);
 
-node_t *literalTerm(parser_t *parser);
+node_t *literal(parser_t *parser);
 
 node_t *_const(parser_t *parser);
 node_t *_identifier(parser_t *parser);
@@ -197,7 +198,10 @@ node_t *_operators(parser_t *parser);
 
 int data_type(parser_t *parser);
 int assign_op(parser_t *parser);
-
+int arithemetic_op(parser_t *parser);
+int logical_op(parser_t *parser);
+int relational_op(parser_t *parser);
+int bool_op(parser_t *parser);
 // Generates the token nodes
 
 /**

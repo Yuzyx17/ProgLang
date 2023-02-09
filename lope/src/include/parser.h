@@ -64,7 +64,7 @@ token_t *parser_previous_peek(parser_t *parser);
  *
  * @param token_to_match type of token
  * */
-int match(parser_t *parser, type token_to_match, node_t *node);
+int match(parser_t *parser, type token_to_match);
 /**
  * @brief used for matching nodes, useful for stmts that needs logical
  * evaluation such as while who doesn't want an addition, though it works in
@@ -129,4 +129,5 @@ void traverse(node_t *node, int depth);
  * @param indent_count
  */
 void indent(int indent_count);
+void grammarIndent(int indent_count);
 #endif

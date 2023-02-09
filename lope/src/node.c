@@ -20,6 +20,9 @@ node_t *program(parser_t *parser) {
 }
 // <stmts> => <stmt> | <stmt> <stmts>
 node_t *stmts(parser_t *parser, node_t *parent) {
+    if (parent->type != PROGRAM_GRAMMAR && check(parser, RBRACE)) {
+        return NULL;
+    }
     //<stmts>
     node_t *node = createNode();
     node->type = STATEMENTS_GRAMMAR;
@@ -88,7 +91,7 @@ node_t *stmt(parser_t *parser) {
     return node;
 }
 
-node_t *expr(parser_t *parser) { return logical_op(parser); }
+node_t *expr(parser_t *parser) { return logical(parser); }
 
 node_t *iterative_stmt(parser_t *parser) {
     switch (parser->tok->type) {
@@ -106,33 +109,33 @@ node_t *para(parser_t *parser) {
     node_t *node = createNode();  // FOR
     node->type = PARA_GRAMMAR;
     node->value._para = (paraNode *)calloc(1, sizeof(paraNode));
-    if (!match(parser, PARA, node))
+    if (!match(parser, PARA))
         return error(parser, "[Para] Missing Keyword");
-    if (!match(parser, LPAREN, node))
+    if (!match(parser, LPAREN))
         return error(parser, "[Para] Missing Left Parenthesis");
     if (data_type(parser)) {
         node->value._para->variable = declaration_stmt(parser);
-    } else if (match(parser, ID, node)) {
+    } else if (check(parser, ID)) {
         node->value._para->variable = assign_stmt(parser);
     }
-    if (!match(parser, SEMI, node))
+    if (!match(parser, SEMI))
         return error(parser, "[Para] Missing Semi-colon");
     node->value._para->condition = expr(parser);
-    if (!match(parser, SEMI, node))
+    if (!match(parser, SEMI))
         return error(parser, "[Para] Missing Semi-colon");
     if (check_tokens(parser, 2, INCR, DECR) ||
         (check(parser, ID) && (parser_advance_peek(parser)->type == INCR ||
                                parser_advance_peek(parser)->type == DECR)))
-        node->value._para->iterator = unary_op(parser);
+        node->value._para->iterator = unary(parser);
     else {
         node->value._para->iterator = assign_stmt(parser);
     }
-    if (!match(parser, RPAREN, node))
+    if (!match(parser, RPAREN))
         return error(parser, "[Para] Missing Right Paranthesis");
-    if (!match(parser, LBRACE, node))
+    if (!match(parser, LBRACE))
         return error(parser, "[Para] Missing Left Brace");
     node->value._para->stmts = stmts(parser, node);
-    if (!match(parser, RBRACE, node))
+    if (!match(parser, RBRACE))
         return error(parser, "[Para] Missing Right Brace");
     return node;
 }
@@ -140,17 +143,17 @@ node_t *habang(parser_t *parser) {
     node_t *node = createNode();
     node->type = HABANG_GRAMMAR;
     node->value._habang = (habangNode *)calloc(1, sizeof(habangNode));
-    if (!match(parser, HABANG, node))
+    if (!match(parser, HABANG))
         return error(parser, "[Habang] Missing Keyword");
-    if (!match(parser, LPAREN, node))
+    if (!match(parser, LPAREN))
         return error(parser, "[Habang] Missing Left Paranthesis");
     node->value._habang->expr = expr(parser);
-    if (!match(parser, RPAREN, node))
+    if (!match(parser, RPAREN))
         return error(parser, "[Habang] Missing Right Parenthesis");
-    if (!match(parser, LBRACE, node))
+    if (!match(parser, LBRACE))
         return error(parser, "[Habang] Missing Left Bracket");
     node->value._habang->stmts = stmts(parser, node);
-    if (!match(parser, RBRACE, node))
+    if (!match(parser, RBRACE))
         return error(parser, "[Habang] Missing Right Bracket");
     return node;
 }
@@ -177,18 +180,18 @@ node_t *conditional_stmt(parser_t *parser) {
 node_t *kung(parser_t *parser) {
     node_t *node = createNode();
     node->type = KUNG_GRAMMAR;
-    if (!match(parser, KUNG, node))
+    if (!match(parser, KUNG))
         return error(parser, "[Kung] Missing Keyword");
     node->value._kung = (kungNode *)calloc(1, sizeof(kungNode));
-    if (!match(parser, LPAREN, node))
+    if (!match(parser, LPAREN))
         return error(parser, "[Kung] Missing Left Paranthesis");
     node->value._kung->condition = expr(parser);
-    if (!match(parser, RPAREN, node))
+    if (!match(parser, RPAREN))
         return error(parser, "[Kung] Missing Right Parenthesis");
-    if (!match(parser, LBRACE, node))
+    if (!match(parser, LBRACE))
         return error(parser, "[Kung] Missing Left Bracket");
     node->value._kung->stmts = stmts(parser, node);
-    if (!match(parser, RBRACE, node))
+    if (!match(parser, RBRACE))
         return error(parser, "[Kung] Missing Right Bracket");
     node->value._kung->sakali = conditional_stmt(parser);
     node->value._kung->kundi = conditional_stmt(parser);
@@ -199,17 +202,17 @@ node_t *sakali(parser_t *parser) {
     node_t *node = createNode();
     node->type = SAKALI_GRAMMAR;
     node->value._sakali = (sakaliNode *)calloc(1, sizeof(sakaliNode));
-    if (!match(parser, SAKALI, node))
+    if (!match(parser, SAKALI))
         return error(parser, "[Sakali] Missing keyword");
-    if (!match(parser, LPAREN, node))
+    if (!match(parser, LPAREN))
         return error(parser, "[Sakali] Missing Left Paranthesis");
     node->value._sakali->condition = expr(parser);
-    if (!match(parser, RPAREN, node))
+    if (!match(parser, RPAREN))
         return error(parser, "[Sakali] Missing Right Parenthesis");
-    if (!match(parser, LBRACE, node))
+    if (!match(parser, LBRACE))
         return error(parser, "[Sakali] Missing Left Bracket");
     node->value._sakali->stmts = stmts(parser, node);
-    if (!match(parser, RBRACE, node))
+    if (!match(parser, RBRACE))
         return error(parser, "[Sakali] Missing Right Bracket");
     node->value._sakali->nextelseif = conditional_stmt(parser);
     return node;
@@ -218,12 +221,12 @@ node_t *kundi(parser_t *parser) {
     node_t *node = createNode();
     node->type = KUNDI_GRAMMAR;
     node->value._kundi = (kundiNode *)calloc(1, sizeof(kundiNode));
-    if (!match(parser, KUNDI, node))
+    if (!match(parser, KUNDI))
         return error(parser, "[Kundi] Missing keyword");
-    if (!match(parser, LBRACE, node))
+    if (!match(parser, LBRACE))
         return error(parser, "[Kundi] Missing Left Bracket");
     node->value._kundi->stmt = stmts(parser, node);
-    if (!match(parser, RBRACE, node))
+    if (!match(parser, RBRACE))
         return error(parser, "[Kundi] Missing Right Bracket");
     return node;
 }
@@ -243,37 +246,37 @@ node_t *io_stmts(parser_t *parser) {
 node_t *kuha(parser_t *parser) {
     node_t *node = createNode();
     node->type = KUHA_GRAMMAR;
-    node->value.input = (kuhaNode *)calloc(1, sizeof(kuhaNode));
-    if (!match(parser, KUHA, node))
+    node->value.kuha = (kuhaNode *)calloc(1, sizeof(kuhaNode));
+    if (!match(parser, KUHA))
         return error(parser, "[Kuha] Missing Keyword");
-    if (!match(parser, LPAREN, node))
+    if (!match(parser, LPAREN))
         return error(parser, "[Kuha] Missing Left Parenthesis");
-    node->value.input->stringFormat = literalTerm(parser);
-    if (!match(parser, COMMA, node))
+    node->value.kuha->stringFormat = literal(parser);
+    if (!match(parser, COMMA))
         return error(parser, "[Kuha] Missing Comma");
-    if (!match(parser, ADDRESS, node))
+    if (!match(parser, ADDRESS))
         return error(parser, "[Kuha] Missing Variabe Address");
-    node->value.input->varAddress = parser_match(parser, ID);
-    if (!match(parser, RPAREN, node))
+    node->value.kuha->varAddress = parser_match(parser, ID);
+    if (!match(parser, RPAREN))
         return error(parser, "[Kuha] Missing Variable");
-    if (!match(parser, SEMI, node))
+    if (!match(parser, SEMI))
         return error(parser, "[Kuha] Missing Semi-colon");
     return node;
 }
 // optimize node
 node_t *lahad(parser_t *parser) {
     node_t *node = createNode();
-    node->type = LAHAD_GRAMMAR;
+    node->type = LAHAD_GRAMMAR_A;
     node->value.printString =
         (printStringNode *)calloc(1, sizeof(printStringNode));
-    if (!match(parser, LAHAD, node))
+    if (!match(parser, LAHAD))
         return error(parser, "[Kuha] Missing Keyword");
-    if (!match(parser, LPAREN, node))
+    if (!match(parser, LPAREN))
         return error(parser, "[Lahad] Missing Left Parenthesis");
-    node->value.printString->stringValue = logical_op(parser);
+    node->value.printString->stringValue = logical(parser);
     if (check(parser, RPAREN)) {
-        match(parser, RPAREN, node);
-        if (match(parser, SEMI, node))
+        match(parser, RPAREN);
+        if (match(parser, SEMI))
             return node;
         else
             return error(parser, "[Lahad] Missing Semi-colon");
@@ -282,33 +285,35 @@ node_t *lahad(parser_t *parser) {
         return error(parser, "[Lahad] Missing Right Parenthesis");
     // if COMMA, ask if it's print value or print expr
     else if (check(parser, COMMA)) {
-        match(parser, COMMA, node);
-
+        parser_advance(parser);
         // ask if the nxt token is NUM, PUNTO, then it's print the
         // expr
         if (check(parser, NUM) || check(parser, PUNTO)) {
             node_t *printExpNode = createNode();
-            node->type = LAHAD_GRAMMAR;
+            printExpNode->type = LAHAD_GRAMMAR_B;
+            node->type = LAHAD_GRAMMAR_B;
             printExpNode->value.printExpression =
                 (printExp *)calloc(1, sizeof(printExp));
 
             // get the string format
             printExpNode->value.printExpression->stringFormat =
-                node->value.printString->stringValue;  // UwU
-            free(node);
+                node->value.printString->stringValue;
+            // free(node);
 
             // get the expr
-            printExpNode->value.printExpression->expr = logical_op(parser);
-            if (!match(parser, RPAREN, node))
+            printExpNode->value.printExpression->expr = logical(parser);
+            if (!match(parser, RPAREN))
                 return error(parser, "[Lahad] Missing Right Parenthesis");
-            if (!match(parser, SEMI, node))
+            if (!match(parser, SEMI))
                 return error(parser,
                              "[Lahad] Missing Semi-colon on Lahad Statement");
+            printf("%d", printExpNode->type);
             return printExpNode;
         }
 
         node_t *printNode = createNode();
-        node->type = LAHAD_GRAMMAR;
+        printNode->type = LAHAD_GRAMMAR_C;
+        node->type = LAHAD_GRAMMAR_C;
         printNode->value.printValue =
             (printValueNode *)calloc(1, sizeof(printValueNode));
 
@@ -320,9 +325,9 @@ node_t *lahad(parser_t *parser) {
         // get the identifier
         printNode->value.printValue->identifier = parser_match(parser, ID);
 
-        if (!match(parser, RPAREN, node))
+        if (!match(parser, RPAREN))
             return error(parser, "[Lahad] Missing Right Parenthesis");
-        if (!match(parser, SEMI, node))
+        if (!match(parser, SEMI))
             return error(parser,
                          "[Lahad] Missing Semi-colon on Lahad Statement");
         return printNode;
@@ -390,8 +395,8 @@ node_t *assign_stmt(parser_t *parser) {
     return node;
 }
 
-node_t *logical_op(parser_t *parser) {
-    node_t *node = relational_op(parser);
+node_t *logical(parser_t *parser) {
+    node_t *node = relational(parser);
     while (check_tokens(parser, 2, O, AT)) {
         node_t *logicalNode = createNode();
         logicalNode->type = LOGICAL_GRAMMAR;
@@ -399,13 +404,13 @@ node_t *logical_op(parser_t *parser) {
             (expressionNode *)calloc(1, sizeof(expressionNode));
         logicalNode->value._expression->left = node;
         logicalNode->value._expression->operation = _operators(parser);
-        logicalNode->value._expression->right = relational_op(parser);
+        logicalNode->value._expression->right = relational(parser);
         node = logicalNode;
     }
     return node;
 }
-node_t *relational_op(parser_t *parser) {
-    node_t *node = arithmetic_op(parser);
+node_t *relational(parser_t *parser) {
+    node_t *node = arithmetic(parser);
     while (check_tokens(parser, 6, EQ_TO, NOT_EQ, GREATER, LESS, GR_THAN_EQ,
                         LS_THAN_EQ)) {
         node_t *relationalNode = createNode();
@@ -414,13 +419,13 @@ node_t *relational_op(parser_t *parser) {
             (expressionNode *)calloc(1, sizeof(expressionNode));
         relationalNode->value._expression->left = node;
         relationalNode->value._expression->operation = _operators(parser);
-        relationalNode->value._expression->right = arithmetic_op(parser);
+        relationalNode->value._expression->right = arithmetic(parser);
         node = relationalNode;
     }
     return node;
 }
-node_t *arithmetic_op(parser_t *parser) {
-    node_t *node = negateN(parser);
+node_t *arithmetic(parser_t *parser) {
+    node_t *node = negate(parser);
     while (check_tokens(parser, 7, EXP, MULT, DIV, INTDIV, MOD, ADD, SUB)) {
         node_t *arithmeticNode = createNode();
         arithmeticNode->type = ARITHMETIC_GRAMMAR;
@@ -428,23 +433,23 @@ node_t *arithmetic_op(parser_t *parser) {
             (expressionNode *)calloc(1, sizeof(expressionNode));
         arithmeticNode->value._expression->left = node;
         arithmeticNode->value._expression->operation = _operators(parser);
-        arithmeticNode->value._expression->right = negateN(parser);
+        arithmeticNode->value._expression->right = negate(parser);
         node = arithmeticNode;
     }
     return node;
 }
-node_t *negateN(parser_t *parser) {
+node_t *negate(parser_t *parser) {
     while (check(parser, NEGATE)) {
         node_t *node = createNode();
         node->type = UNARY_GRAMMAR;
         node->value.unary = (unaryNode *)calloc(1, sizeof(unaryNode));
         node->value.unary->operation = _operators(parser);
-        node->value.unary->token = literalTerm(parser);
+        node->value.unary->token = literal(parser);
         return node;
     }
-    return literalTerm(parser);
+    return literal(parser);
 }
-node_t *unary_op(parser_t *parser) {
+node_t *unary(parser_t *parser) {
     node_t *node = createNode();
     node->type = UNARY_GRAMMAR;
     node->value.unary = (unaryNode *)calloc(1, sizeof(unaryNode));
@@ -458,12 +463,12 @@ node_t *unary_op(parser_t *parser) {
     return node;
 }
 
-node_t *literalTerm(parser_t *parser) {
+node_t *literal(parser_t *parser) {
     if (check(parser, LPAREN)) {
-        if (!match(parser, LPAREN, NULL))
+        if (!match(parser, LPAREN))
             return error(parser, "[Expr] Missing Left Paranthesis here");
         node_t *node = expr(parser);
-        if (!match(parser, RPAREN, node))
+        if (!match(parser, RPAREN))
             return error(parser, "[Expr] Missing Left Paranthesis here");
         return node;
 
@@ -473,6 +478,8 @@ node_t *literalTerm(parser_t *parser) {
                             MALI)) {
         return _const(parser);
     }
+    // printf("MAY ERROR DITO OY %d %d\n", parser->tok->lpos,
+    // parser->tok->cpos);
     return error(parser, "[Expr] Missing variable or expression");
 }
 
@@ -563,7 +570,76 @@ int data_type(parser_t *parser) {
             return 0;
     }
 }
+
+int bool_op(parser_t *parser) {
+    if (relational_op(parser))
+        return 1;
+    else if (logical_op(parser))
+        return 1;
+    return 0;
+}
+
 int assign_op(parser_t *parser) {
+    switch (parser->tok->type) {
+        case EQUALS:
+            return 1;
+        case ADD_ASGN:
+            return 1;
+        case SUB_ASGN:
+            return 1;
+        case MULT_ASGN:
+            return 1;
+        case INTDIV_ASGN:
+            return 1;
+        case DIV_ASGN:
+            return 1;
+        case MOD_ASGN:
+            return 1;
+        default:
+            return 0;
+    }
+}
+int relational_op(parser_t *parser) {
+    switch (parser->tok->type) {
+        case EQUALS:
+            return 1;
+        case ADD_ASGN:
+            return 1;
+        case SUB_ASGN:
+            return 1;
+        case MULT_ASGN:
+            return 1;
+        case INTDIV_ASGN:
+            return 1;
+        case DIV_ASGN:
+            return 1;
+        case MOD_ASGN:
+            return 1;
+        default:
+            return 0;
+    }
+}
+int logical_op(parser_t *parser) {
+    switch (parser->tok->type) {
+        case EQUALS:
+            return 1;
+        case ADD_ASGN:
+            return 1;
+        case SUB_ASGN:
+            return 1;
+        case MULT_ASGN:
+            return 1;
+        case INTDIV_ASGN:
+            return 1;
+        case DIV_ASGN:
+            return 1;
+        case MOD_ASGN:
+            return 1;
+        default:
+            return 0;
+    }
+}
+int arithemetic_op(parser_t *parser) {
     switch (parser->tok->type) {
         case EQUALS:
             return 1;
