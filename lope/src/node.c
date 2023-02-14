@@ -337,40 +337,28 @@ node_t *lahad(parser_t *parser) {
 
 // optimize node
 node_t *declaration_stmt(parser_t *parser) {
-    node_t *assgn_node = createNode();
-    assgn_node->value.declaration =
-        (declarationNode *)calloc(1, sizeof(declarationNode));
-
     node_t *dec_node = createNode();
-    dec_node->value._declaration =
-        (noValueDeclarationNode *)calloc(1, sizeof(noValueDeclarationNode));
-    assgn_node->type = DEC_STMTS_GRAMMAR;
-    dec_node->type = TEMP_DEC;
+    dec_node->value.declaration =
+        (declarationNode *)calloc(1, sizeof(declarationNode));
+    dec_node->type = DEC_STMTS_GRAMMAR;
 
-    assgn_node->value.declaration->dataType = _token(parser);
-    dec_node->value._declaration->dataType =
-        assgn_node->value.declaration->dataType;
+    dec_node->value.declaration->dataType = _token(parser);
 
     if (!check(parser, ID)) {
-        free(assgn_node);
-        free(dec_node);
-        return error(parser, "[Declaration] Missing identifier");
+        dec_node = error(parser, "[Declaration] Missing identifier");
+        return dec_node;
     }
-    assgn_node->value._declaration->identifier = _token(parser);
-    dec_node->value._declaration->identifier =
-        assgn_node->value.declaration->identifier;
+    dec_node->value._declaration->identifier = _token(parser);
     if (check(parser, SEMI)) {
-        free(assgn_node);
         return dec_node;
     } else {
-        free(dec_node);
         if (!assign_op(parser)) {
             return error(parser, "[Declaration] Missing assignment");
         }
-        assgn_node->value.declaration->assignType = _operators(parser);
+        dec_node->value.declaration->assignType = _operators(parser);
 
-        assgn_node->value.declaration->expr = expr(parser);
-        return assgn_node;
+        dec_node->value.declaration->expr = expr(parser);
+        return dec_node;
     }
 }
 node_t *assign_stmt(parser_t *parser) {
