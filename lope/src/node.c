@@ -94,13 +94,18 @@ node_t *stmt(parser_t *parser) {
 node_t *expr(parser_t *parser) {
     node_t *node = createNode();
     node->type = EXPRESSION;
-    node->value.__expression = node->value.stmt =
+    node->value.__expression = node->value.__expression =
         (_expressionNode *)calloc(1, sizeof(_expressionNode));
     if (check(parser, ID)) {
         node->value.__expression->left = _identifier(parser);
         if (operators(parser)) {
             node->value.__expression->operation = _operators(parser);
             if (_const_(parser)) {
+                node->value.__expression->right == _const(parser);
+            } else if (check(parser, ID)) {
+                node->value.__expression->right == _identifier(parser);
+            } else {
+                node = error(parser, "[Expr] Missing Right hand side");
             }
         } else {
             node = error(parser, "[Expr] Missing Operator");

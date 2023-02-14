@@ -221,6 +221,14 @@ void grammarOf(node_t *node, int depth) {
             grammarOf(node->value._expression->operation, depth);
             grammarOf(node->value._expression->right, depth);
             break;
+        case EXPRESSION:
+            printf("<expr> => ");
+            grammarOf(node->value.__expression->left, depth);
+            grammarOf(node->value.__expression->operation, depth);
+            grammarOf(node->value.__expression->right, depth);
+            grammarOf(node->value.__expression->operation2, depth);
+            grammarOf(node->value.__expression->next_expr, depth);
+            break;
         case UNARY_GRAMMAR:
             printf("<expr>\n <expr> => ");
             grammarOf(node->value.unary->token, depth);

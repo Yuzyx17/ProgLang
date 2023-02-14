@@ -205,6 +205,7 @@ node_t *_identifier(parser_t *parser);
 node_t *_data_type(parser_t *parser);
 node_t *_operators(parser_t *parser);
 
+int _const_(parser_t *parser);
 int data_type(parser_t *parser);
 int assign_op(parser_t *parser);
 int arithemetic_op(parser_t *parser);
