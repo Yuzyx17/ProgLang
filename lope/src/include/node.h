@@ -18,6 +18,7 @@ typedef enum {
     DATA_TYPE,
     OPERATORS,
     TERMINAL,
+    EXPRESSION,
     DEC_STMTS_GRAMMAR,
     ERROR,
     HABANG_GRAMMAR,
@@ -77,6 +78,13 @@ typedef struct {
     node_t *right;      // expr
 } expressionNode;
 typedef struct {
+    node_t *left;        // expr
+    node_t *operation;   // tokenNode
+    node_t *right;       // expr
+    node_t *operation2;  // expr
+    node_t *next_expr;   // expr
+} _expressionNode;
+typedef struct {
     node_t *dataType;
     node_t *identifier;
     node_t *assignType;
@@ -126,6 +134,7 @@ typedef union {
     paraNode *_para;
     assgnNode *assgn;
     expressionNode *_expression;
+    _expressionNode *__expression;
     unaryNode *unary;
     tokenNode *atom;
     errorNode *error;
@@ -187,7 +196,7 @@ node_t *relational(parser_t *parser);
 
 node_t *arithmetic(parser_t *parser);
 node_t *negate(parser_t *parser);
-node_t *unary(parser_t *parser);
+node_t *unary_op(parser_t *parser);
 
 node_t *literal(parser_t *parser);
 
@@ -202,6 +211,7 @@ int arithemetic_op(parser_t *parser);
 int logical_op(parser_t *parser);
 int relational_op(parser_t *parser);
 int bool_op(parser_t *parser);
+int bolyan_lit(parser_t *parser);
 // Generates the token nodes
 int operators(parser_t *parser);
 

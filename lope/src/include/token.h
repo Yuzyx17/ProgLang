@@ -70,9 +70,9 @@ typedef enum {
     TOTOO,   // totoo
     MALI,    // mali
     NUMERO,  // numero / num
-    NUM,     // num literals [0-9]*
+    NUMERO_LIT,     // num literals [0-9]*
     LINYA,   // linya
-    STRING,  // "[a-!]"
+    LINYA_LIT,  // "[a-!]"
     WALA,    // wala
     PUNTO,   // punto / puntonumero
     DOBLE,   // doble / doblenumero

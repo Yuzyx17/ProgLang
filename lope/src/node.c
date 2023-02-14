@@ -91,7 +91,25 @@ node_t *stmt(parser_t *parser) {
     return node;
 }
 
-node_t *expr(parser_t *parser) { return logical(parser); }
+node_t *expr(parser_t *parser) {
+    node_t *node = createNode();
+    node->type = EXPRESSION;
+    node->value.__expression = node->value.stmt =
+        (_expressionNode *)calloc(1, sizeof(_expressionNode));
+    if (check(parser, ID)) {
+        node->value.__expression->left = _identifier(parser);
+        if (operators(parser)) {
+            node->value.__expression->operation = _operators(parser);
+            if (_const_(parser)) {
+            }
+        } else {
+            node = error(parser, "[Expr] Missing Operator");
+        }
+    } else {
+        node = error(parser, "[Expr] Missing identifier");
+    }
+    return node;
+}
 
 node_t *iterative_stmt(parser_t *parser) {
     switch (parser->tok->type) {
@@ -126,7 +144,7 @@ node_t *para(parser_t *parser) {
     if (check_tokens(parser, 2, INCR, DECR) ||
         (check(parser, ID) && (parser_advance_peek(parser)->type == INCR ||
                                parser_advance_peek(parser)->type == DECR)))
-        node->value._para->iterator = unary(parser);
+        node->value._para->iterator = unary_op(parser);
     else {
         node->value._para->iterator = assign_stmt(parser);
     }
@@ -286,9 +304,9 @@ node_t *lahad(parser_t *parser) {
     // if COMMA, ask if it's print value or print expr
     else if (check(parser, COMMA)) {
         parser_advance(parser);
-        // ask if the nxt token is NUM, PUNTO, then it's print the
+        // ask if the nxt token is NUMERO_LIT, PUNTO, then it's print the
         // expr
-        if (check(parser, NUM) || check(parser, PUNTO)) {
+        if (check(parser, NUMERO_LIT) || check(parser, PUNTO_LIT)) {
             node_t *printExpNode = createNode();
             printExpNode->type = LAHAD_GRAMMAR_B;
             node->type = LAHAD_GRAMMAR_B;
@@ -449,7 +467,7 @@ node_t *negate(parser_t *parser) {
     }
     return literal(parser);
 }
-node_t *unary(parser_t *parser) {
+node_t *unary_op(parser_t *parser) {
     node_t *node = createNode();
     node->type = UNARY_GRAMMAR;
     node->value.unary = (unaryNode *)calloc(1, sizeof(unaryNode));
@@ -474,8 +492,8 @@ node_t *literal(parser_t *parser) {
 
     } else if (check(parser, ID)) {
         return _identifier(parser);
-    } else if (check_tokens(parser, 6, NUM, CHAR_LIT, STRING, PUNTO_LIT, TOTOO,
-                            MALI)) {
+    } else if (check_tokens(parser, 6, NUMERO_LIT, CHAR_LIT, LINYA_LIT,
+                            PUNTO_LIT, TOTOO, MALI)) {
         return _const(parser);
     }
     // printf("MAY ERROR DITO OY %d %d\n", parser->tok->lpos,
@@ -571,6 +589,28 @@ int data_type(parser_t *parser) {
     }
 }
 
+int _const_(parser_t *parser) {
+    switch (parser->tok->type) {
+        case NUMERO_LIT:
+            return 1;
+        case CHAR_LIT:
+            return 1;
+        case PUNTO_LIT:
+            return 1;
+        case LINYA_LIT:
+            return 1;
+        default:
+            break;
+    }
+    if (bolyan_lit(parser))
+        return 1;
+    return 0;
+}
+int bolyan_lit(parser_t *parser) {
+    if (parser->tok->type == TOTOO || parser->tok->type == MALI)
+        return 1;
+    return 0;
+}
 int bool_op(parser_t *parser) {
     if (relational_op(parser))
         return 1;
@@ -658,4 +698,14 @@ int arithemetic_op(parser_t *parser) {
         default:
             return 0;
     }
+}
+
+int operators(parser_t *parser) {
+    if (arithemetic_op(parser)) {
+        return 1;
+    }
+    if (relational_op(parser)) {
+        return 1;
+    }
+    return 0;
 }

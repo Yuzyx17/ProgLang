@@ -386,7 +386,7 @@ token_t *lexer_get_next_token(lexer_t *lexer) {
 // if the current character is " call this function and advance the lexer
 token_t *lexer_collect_string(lexer_t *lexer) {
     int startPos = lexer->lc;
-    // if the lexer collected a string, advance it to skip the "
+    // if the lexer collected a LINYA_LIT, advance it to skip the "
     lexer_advance(lexer);
     // value is the allocation of the memory for a string
     char *value = calloc(1, sizeof(char));
@@ -405,7 +405,7 @@ token_t *lexer_collect_string(lexer_t *lexer) {
     // return the value by calling the init_token function wherein it will be a
     // STRING as type and added into the struct.
 
-    return init_token(STRING, value, lexer->l, startPos - 1);
+    return init_token(LINYA_LIT, value, lexer->l, startPos - 1);
 };
 
 char *lexer_get_operator_ext_as_string(lexer_t *lexer) {
@@ -661,7 +661,7 @@ token_t *lexer_collect_keyword(lexer_t *lexer) {
         } else
             goto SCAN_INDENTIFIER;
     }
-    // NUMERO - NUMERO / NUM | //NASA - NASA
+    // NUMERO - NUMERO / NUMERO_LIT, | //NASA - NASA
     else if (value[0] == 'n') {
         if (value[1] == 'u') {
             if (value[2] == 'm') {
@@ -1112,7 +1112,7 @@ token_t *lexer_collect_number(lexer_t *lexer) {
     // return the value by calling the init_token function wherein it will be a
     // STRING as type and added into the struct.
     if (decimal_count == 0) {
-        return init_token(NUM, value, lexer->l, startPos);
+        return init_token(NUMERO_LIT, value, lexer->l, startPos);
     } else if (decimal_count <= 1) {
         return init_token(PUNTO_LIT, value, lexer->l, startPos);
     } else {
