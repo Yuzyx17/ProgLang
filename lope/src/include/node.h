@@ -203,6 +203,7 @@ int logical_op(parser_t *parser);
 int relational_op(parser_t *parser);
 int bool_op(parser_t *parser);
 // Generates the token nodes
+int operators(parser_t *parser);
 
 /**
  * @brief generates the token node and advances
