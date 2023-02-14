@@ -222,7 +222,9 @@ void grammarOf(node_t *node, int depth) {
             grammarOf(node->value._expression->right, depth);
             break;
         case EXPRESSION:
-            printf("<expr> => ");
+            if (node->value.__expression->operation != NULL) {
+                printf("<expr>\n<expr> => ");
+            }
             grammarOf(node->value.__expression->left, depth);
             grammarOf(node->value.__expression->operation, depth);
             grammarOf(node->value.__expression->right, depth);

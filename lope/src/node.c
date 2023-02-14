@@ -94,16 +94,37 @@ node_t *stmt(parser_t *parser) {
 node_t *expr(parser_t *parser) {
     node_t *node = createNode();
     node->type = EXPRESSION;
-    node->value.__expression = node->value.__expression =
+    node->value.__expression =
         (_expressionNode *)calloc(1, sizeof(_expressionNode));
-    if (check(parser, ID)) {
-        node->value.__expression->left = _identifier(parser);
-        if (operators(parser)) {
+    if (check(parser, ID) || _const_(parser)) {
+        if (check(parser, ID))
+            node->value.__expression->left = _identifier(parser);
+        else
+            node->value.__expression->left = _const(parser);
+        if (check(parser, SEMI)) {
+            return node;
+        } else if (operators(parser)) {
             node->value.__expression->operation = _operators(parser);
             if (_const_(parser)) {
-                node->value.__expression->right == _const(parser);
+                node->value.__expression->right = _const(parser);
+                if (check(parser, SEMI)) {
+                    return node;
+                } else if (operators(parser)) {
+                    node->value.__expression->operation2 = _operators(parser);
+                    node->value.__expression->next_expr = expr(parser);
+                } else {
+                    node = error(parser, "[Expr] Missing Operator");
+                }
             } else if (check(parser, ID)) {
-                node->value.__expression->right == _identifier(parser);
+                node->value.__expression->right = _identifier(parser);
+                if (check(parser, SEMI)) {
+                    return node;
+                } else if (operators(parser)) {
+                    node->value.__expression->operation2 = _operators(parser);
+                    node->value.__expression->next_expr = expr(parser);
+                } else {
+                    node = error(parser, "[Expr] Missing Operator");
+                }
             } else {
                 node = error(parser, "[Expr] Missing Right hand side");
             }
@@ -633,19 +654,17 @@ int assign_op(parser_t *parser) {
 }
 int relational_op(parser_t *parser) {
     switch (parser->tok->type) {
-        case EQUALS:
+        case EQ_TO:
             return 1;
-        case ADD_ASGN:
+        case NOT_EQ:
             return 1;
-        case SUB_ASGN:
+        case GREATER:
             return 1;
-        case MULT_ASGN:
+        case GR_THAN_EQ:
             return 1;
-        case INTDIV_ASGN:
+        case LESS:
             return 1;
-        case DIV_ASGN:
-            return 1;
-        case MOD_ASGN:
+        case LS_THAN_EQ:
             return 1;
         default:
             return 0;
@@ -653,19 +672,9 @@ int relational_op(parser_t *parser) {
 }
 int logical_op(parser_t *parser) {
     switch (parser->tok->type) {
-        case EQUALS:
+        case O:
             return 1;
-        case ADD_ASGN:
-            return 1;
-        case SUB_ASGN:
-            return 1;
-        case MULT_ASGN:
-            return 1;
-        case INTDIV_ASGN:
-            return 1;
-        case DIV_ASGN:
-            return 1;
-        case MOD_ASGN:
+        case AT:
             return 1;
         default:
             return 0;
@@ -673,19 +682,17 @@ int logical_op(parser_t *parser) {
 }
 int arithemetic_op(parser_t *parser) {
     switch (parser->tok->type) {
-        case EQUALS:
+        case ADD:
             return 1;
-        case ADD_ASGN:
+        case SUB:
             return 1;
-        case SUB_ASGN:
+        case INTDIV:
             return 1;
-        case MULT_ASGN:
+        case DIV:
             return 1;
-        case INTDIV_ASGN:
+        case MOD:
             return 1;
-        case DIV_ASGN:
-            return 1;
-        case MOD_ASGN:
+        case MULT:
             return 1;
         default:
             return 0;
@@ -695,8 +702,7 @@ int arithemetic_op(parser_t *parser) {
 int operators(parser_t *parser) {
     if (arithemetic_op(parser)) {
         return 1;
-    }
-    if (relational_op(parser)) {
+    } else if (bool_op(parser)) {
         return 1;
     }
     return 0;
