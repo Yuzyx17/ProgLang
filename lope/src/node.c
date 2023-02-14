@@ -107,29 +107,26 @@ node_t *expr(parser_t *parser) {
             node->value.__expression->operation = _operators(parser);
             if (_const_(parser)) {
                 node->value.__expression->right = _const(parser);
-                if (check(parser, SEMI)) {
-                    return node;
-                } else if (operators(parser)) {
+                if (operators(parser)) {
                     node->value.__expression->operation2 = _operators(parser);
                     node->value.__expression->next_expr = expr(parser);
                 } else {
-                    node = error(parser, "[Expr] Missing Operator");
+                    return node;
                 }
             } else if (check(parser, ID)) {
                 node->value.__expression->right = _identifier(parser);
-                if (check(parser, SEMI)) {
-                    return node;
-                } else if (operators(parser)) {
+                if (operators(parser)) {
                     node->value.__expression->operation2 = _operators(parser);
                     node->value.__expression->next_expr = expr(parser);
                 } else {
-                    node = error(parser, "[Expr] Missing Operator");
+                    return node;
                 }
             } else {
                 node = error(parser, "[Expr] Missing Right hand side");
             }
         } else {
-            node = error(parser, "[Expr] Missing Operator");
+            // node = error(parser, "[Expr] Missing Operator");
+            return node;
         }
     } else {
         node = error(parser, "[Expr] Missing identifier");
@@ -295,7 +292,10 @@ node_t *kuha(parser_t *parser) {
         return error(parser, "[Kuha] Missing Keyword");
     if (!match(parser, LPAREN))
         return error(parser, "[Kuha] Missing Left Parenthesis");
-    node->value.kuha->stringFormat = literal(parser);
+    if (parser->tok->type == LINYA_LIT)
+        node->value.kuha->stringFormat = _const(parser);
+    else
+        return error(parser, "[Kuha] Missing format");
     if (!match(parser, COMMA))
         return error(parser, "[Kuha] Missing Comma");
     if (!match(parser, ADDRESS))
@@ -317,7 +317,7 @@ node_t *lahad(parser_t *parser) {
         return error(parser, "[Kuha] Missing Keyword");
     if (!match(parser, LPAREN))
         return error(parser, "[Lahad] Missing Left Parenthesis");
-    node->value.printString->stringValue = logical(parser);
+    node->value.printString->stringValue = expr(parser);
     if (check(parser, RPAREN)) {
         match(parser, RPAREN);
         if (match(parser, SEMI))
@@ -345,7 +345,7 @@ node_t *lahad(parser_t *parser) {
             // free(node);
 
             // get the expr
-            printExpNode->value.printExpression->expr = logical(parser);
+            printExpNode->value.printExpression->expr = expr(parser);
             if (!match(parser, RPAREN))
                 return error(parser, "[Lahad] Missing Right Parenthesis");
             if (!match(parser, SEMI))
@@ -426,60 +426,6 @@ node_t *assign_stmt(parser_t *parser) {
     return node;
 }
 
-node_t *logical(parser_t *parser) {
-    node_t *node = relational(parser);
-    while (check_tokens(parser, 2, O, AT)) {
-        node_t *logicalNode = createNode();
-        logicalNode->type = LOGICAL_GRAMMAR;
-        logicalNode->value._expression =
-            (expressionNode *)calloc(1, sizeof(expressionNode));
-        logicalNode->value._expression->left = node;
-        logicalNode->value._expression->operation = _operators(parser);
-        logicalNode->value._expression->right = relational(parser);
-        node = logicalNode;
-    }
-    return node;
-}
-node_t *relational(parser_t *parser) {
-    node_t *node = arithmetic(parser);
-    while (check_tokens(parser, 6, EQ_TO, NOT_EQ, GREATER, LESS, GR_THAN_EQ,
-                        LS_THAN_EQ)) {
-        node_t *relationalNode = createNode();
-        relationalNode->type = RELATIONAL_GRAMMAR;
-        relationalNode->value._expression =
-            (expressionNode *)calloc(1, sizeof(expressionNode));
-        relationalNode->value._expression->left = node;
-        relationalNode->value._expression->operation = _operators(parser);
-        relationalNode->value._expression->right = arithmetic(parser);
-        node = relationalNode;
-    }
-    return node;
-}
-node_t *arithmetic(parser_t *parser) {
-    node_t *node = negate(parser);
-    while (check_tokens(parser, 7, EXP, MULT, DIV, INTDIV, MOD, ADD, SUB)) {
-        node_t *arithmeticNode = createNode();
-        arithmeticNode->type = ARITHMETIC_GRAMMAR;
-        arithmeticNode->value._expression =
-            (expressionNode *)calloc(1, sizeof(expressionNode));
-        arithmeticNode->value._expression->left = node;
-        arithmeticNode->value._expression->operation = _operators(parser);
-        arithmeticNode->value._expression->right = negate(parser);
-        node = arithmeticNode;
-    }
-    return node;
-}
-node_t *negate(parser_t *parser) {
-    while (check(parser, NEGATE)) {
-        node_t *node = createNode();
-        node->type = UNARY_GRAMMAR;
-        node->value.unary = (unaryNode *)calloc(1, sizeof(unaryNode));
-        node->value.unary->operation = _operators(parser);
-        node->value.unary->token = literal(parser);
-        return node;
-    }
-    return literal(parser);
-}
 node_t *unary_op(parser_t *parser) {
     node_t *node = createNode();
     node->type = UNARY_GRAMMAR;
@@ -492,26 +438,6 @@ node_t *unary_op(parser_t *parser) {
         node->value.unary->token = _identifier(parser);
     }
     return node;
-}
-
-node_t *literal(parser_t *parser) {
-    if (check(parser, LPAREN)) {
-        if (!match(parser, LPAREN))
-            return error(parser, "[Expr] Missing Left Paranthesis here");
-        node_t *node = expr(parser);
-        if (!match(parser, RPAREN))
-            return error(parser, "[Expr] Missing Left Paranthesis here");
-        return node;
-
-    } else if (check(parser, ID)) {
-        return _identifier(parser);
-    } else if (check_tokens(parser, 6, NUMERO_LIT, CHAR_LIT, LINYA_LIT,
-                            PUNTO_LIT, TOTOO, MALI)) {
-        return _const(parser);
-    }
-    // printf("MAY ERROR DITO OY %d %d\n", parser->tok->lpos,
-    // parser->tok->cpos);
-    return error(parser, "[Expr] Missing variable or expression");
 }
 
 node_t *_const(parser_t *parser) {

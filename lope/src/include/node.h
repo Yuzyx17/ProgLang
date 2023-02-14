@@ -191,14 +191,7 @@ node_t *lahad(parser_t *parser);
 
 node_t *expr(parser_t *parser);
 
-node_t *logical(parser_t *parser);
-node_t *relational(parser_t *parser);
-
-node_t *arithmetic(parser_t *parser);
-node_t *negate(parser_t *parser);
 node_t *unary_op(parser_t *parser);
-
-node_t *literal(parser_t *parser);
 
 node_t *_const(parser_t *parser);
 node_t *_identifier(parser_t *parser);
