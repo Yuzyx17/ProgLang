@@ -125,7 +125,6 @@ node_t *expr(parser_t *parser) {
                 node = error(parser, "[Expr] Missing Right hand side");
             }
         } else {
-            // node = error(parser, "[Expr] Missing Operator");
             return node;
         }
     } else {
@@ -218,6 +217,7 @@ node_t *conditional_stmt(parser_t *parser) {
         }
     }
 }
+
 node_t *kung(parser_t *parser) {
     node_t *node = createNode();
     node->type = KUNG_GRAMMAR;
@@ -320,9 +320,10 @@ node_t *lahad(parser_t *parser) {
     node->value.printString->stringValue = expr(parser);
     if (check(parser, RPAREN)) {
         match(parser, RPAREN);
-        if (match(parser, SEMI))
+        if (check(parser, SEMI)) {
+            parser_advance(parser);
             return node;
-        else
+        } else
             return error(parser, "[Lahad] Missing Semi-colon");
 
     } else if (check(parser, SEMI))
@@ -351,7 +352,6 @@ node_t *lahad(parser_t *parser) {
             if (!match(parser, SEMI))
                 return error(parser,
                              "[Lahad] Missing Semi-colon on Lahad Statement");
-            printf("%d", printExpNode->type);
             return printExpNode;
         }
 
@@ -387,7 +387,7 @@ node_t *declaration_stmt(parser_t *parser) {
 
     dec_node->type = DEC_STMTS_GRAMMAR;
 
-    dec_node->value.declaration->dataType = _token(parser);
+    dec_node->value.declaration->dataType = _data_type(parser);
     if (!check(parser, ID)) {
         dec_node = error(parser, "[Declaration] Missing identifier");
         return dec_node;
@@ -397,7 +397,9 @@ node_t *declaration_stmt(parser_t *parser) {
         return dec_node;
     } else {
         if (!assign_op(parser)) {
-            return error(parser, "[Declaration] Missing assignment");
+            return error(
+                parser,
+                "[Declaration] Missing assignment expression or Semi-colon");
         }
         dec_node->value.declaration->assignType = _operators(parser);
         dec_node->value.declaration->expr = expr(parser);

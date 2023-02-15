@@ -66,17 +66,17 @@ typedef enum {
     LAHAT,    // lahat
 
     /* ADD: data types*/
-    BOLYAN,  // bolyan
-    TOTOO,   // totoo
-    MALI,    // mali
-    NUMERO,  // numero / num
-    NUMERO_LIT,     // num literals [0-9]*
-    LINYA,   // linya
-    LINYA_LIT,  // "[a-!]"
-    WALA,    // wala
-    PUNTO,   // punto / puntonumero
-    DOBLE,   // doble / doblenumero
-    KAR,     // karakter / kar
+    BOLYAN,      // bolyan
+    TOTOO,       // totoo
+    MALI,        // mali
+    NUMERO,      // numero / num
+    NUMERO_LIT,  // num literals [0-9]*
+    LINYA,       // linya
+    LINYA_LIT,   // "[a-!]"
+    WALA,        // wala
+    PUNTO,       // punto / puntonumero
+    DOBLE,       // doble / doblenumero
+    KAR,         // karakter / kar
 
     /* unknown token */
     UNKNOWN,  // invalid
