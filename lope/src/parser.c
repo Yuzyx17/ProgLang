@@ -175,6 +175,7 @@ void grammarOf(node_t *node, int depth) {
             grammarOf(node->value.declaration->expr, depth);
             break;
         case TERMINAL:
+        case DATA_TYPE:
         case OPERATORS:
         case CONST:
         case ID:

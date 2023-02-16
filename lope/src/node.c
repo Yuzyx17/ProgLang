@@ -56,7 +56,7 @@ node_t *stmt(parser_t *parser) {
     node->value.stmt = (statementNode *)calloc(1, sizeof(statementNode));
     // <stmt> => <dec_stmts>
     if (data_type(parser)) {
-        node->value.stmt->stmt = declaration_stmt(parser);
+        node->value.stmt->stmt = dec_stmt(parser);
         if (check(parser, SEMI))
             parser_advance(parser);
         else if (node->value.stmt->stmt->type != ERROR) {
@@ -76,7 +76,7 @@ node_t *stmt(parser_t *parser) {
     }
     // <stmt> => <con_stmts>
     else if (check(parser, KUNG)) {
-        node->value.stmt->stmt = conditional_stmt(parser);
+        node->value.stmt->stmt = con_stmts(parser);
     }
     // <stmt> => <io_stmts>
     else if (check_tokens(parser, 2, KUHA, LAHAD)) {
@@ -84,7 +84,7 @@ node_t *stmt(parser_t *parser) {
     }
     // <stmt> => <iter_stmts>
     else if (check_tokens(parser, 2, HABANG, PARA)) {
-        node->value.stmt->stmt = iterative_stmt(parser);
+        node->value.stmt->stmt = iter_stmts(parser);
     } else {
         node->value.stmt->stmt = error(parser, "[Program] Unexpected Token");
     }
@@ -140,19 +140,19 @@ node_t *expr(parser_t *parser) {
     return node;
 }
 
-node_t *iterative_stmt(parser_t *parser) {
+node_t *iter_stmts(parser_t *parser) {
     switch (parser->tok->type) {
         case PARA:
-            return para(parser);
+            return para_stmt(parser);
             break;
         case HABANG:
-            return habang(parser);
+            return habang_stmt(parser);
             break;
         default:
             break;
     }
 }
-node_t *para(parser_t *parser) {
+node_t *para_stmt(parser_t *parser) {
     node_t *node = createNode();  // FOR
     node->type = PARA_GRAMMAR;
     node->value._para = (paraNode *)calloc(1, sizeof(paraNode));
@@ -161,7 +161,7 @@ node_t *para(parser_t *parser) {
     if (!match(parser, LPAREN))
         return error(parser, "[Para] Missing Left Parenthesis");
     if (data_type(parser)) {
-        node->value._para->variable = declaration_stmt(parser);
+        node->value._para->variable = dec_stmt(parser);
     } else if (check(parser, IDENTIFIER)) {
         node->value._para->variable = assign_stmt(parser);
     }
@@ -187,7 +187,7 @@ node_t *para(parser_t *parser) {
         return error(parser, "[Para] Missing Right Brace");
     return node;
 }
-node_t *habang(parser_t *parser) {
+node_t *habang_stmt(parser_t *parser) {
     node_t *node = createNode();
     node->type = HABANG_GRAMMAR;
     node->value._habang = (habangNode *)calloc(1, sizeof(habangNode));
@@ -209,19 +209,19 @@ node_t *habang(parser_t *parser) {
     return node;
 }
 
-node_t *conditional_stmt(parser_t *parser) {
+node_t *con_stmts(parser_t *parser) {
     if (nullCursor(parser))
         return NULL;
     else {
         switch (parser->tok->type) {
             case KUNG:
-                return kung(parser);
+                return kung_stmt(parser);
                 break;
             case SAKALI:
-                return sakali(parser);
+                return sakali_stmt(parser);
                 break;
             case KUNDI:
-                return kundi(parser);
+                return kundi_stmt(parser);
                 break;
             default:
                 return NULL;
@@ -229,7 +229,7 @@ node_t *conditional_stmt(parser_t *parser) {
     }
 }
 
-node_t *kung(parser_t *parser) {
+node_t *kung_stmt(parser_t *parser) {
     node_t *node = createNode();
     node->type = KUNG_GRAMMAR;
     if (!match(parser, KUNG))
@@ -248,12 +248,12 @@ node_t *kung(parser_t *parser) {
     node->value._kung->stmts = stmts(parser, node);
     if (!match(parser, RBRACE))
         return error(parser, "[Kung] Missing Right Bracket");
-    node->value._kung->sakali = conditional_stmt(parser);
-    node->value._kung->kundi = conditional_stmt(parser);
+    node->value._kung->sakali_stmt = con_stmts(parser);
+    node->value._kung->kundi = con_stmts(parser);
 
     return node;
 }
-node_t *sakali(parser_t *parser) {
+node_t *sakali_stmt(parser_t *parser) {
     node_t *node = createNode();
     node->type = SAKALI_GRAMMAR;
     node->value._sakali = (sakaliNode *)calloc(1, sizeof(sakaliNode));
@@ -269,10 +269,10 @@ node_t *sakali(parser_t *parser) {
     node->value._sakali->stmts = stmts(parser, node);
     if (!match(parser, RBRACE))
         return error(parser, "[Sakali] Missing Right Bracket");
-    node->value._sakali->nextelseif = conditional_stmt(parser);
+    node->value._sakali->nextelseif = con_stmts(parser);
     return node;
 }
-node_t *kundi(parser_t *parser) {
+node_t *kundi_stmt(parser_t *parser) {
     node_t *node = createNode();
     node->type = KUNDI_GRAMMAR;
     node->value._kundi = (kundiNode *)calloc(1, sizeof(kundiNode));
@@ -395,7 +395,7 @@ node_t *lahad(parser_t *parser) {
 }
 
 // optimize node
-node_t *declaration_stmt(parser_t *parser) {
+node_t *dec_stmt(parser_t *parser) {
     node_t *dec_node = createNode();
     dec_node->value.declaration =
         (declarationNode *)calloc(1, sizeof(declarationNode));
@@ -563,9 +563,9 @@ int bolyan_lit(parser_t *parser) {
     return 0;
 }
 int bool_op(parser_t *parser) {
-    if (relational_op(parser))
+    if (relational(parser))
         return 1;
-    else if (logical_op(parser))
+    else if (logical(parser))
         return 1;
     return 0;
 }
@@ -590,7 +590,7 @@ int assign_op(parser_t *parser) {
             return 0;
     }
 }
-int relational_op(parser_t *parser) {
+int relational(parser_t *parser) {
     switch (parser->tok->type) {
         case EQ_TO:
             return 1;
@@ -608,7 +608,7 @@ int relational_op(parser_t *parser) {
             return 0;
     }
 }
-int logical_op(parser_t *parser) {
+int logical(parser_t *parser) {
     switch (parser->tok->type) {
         case O:
             return 1;

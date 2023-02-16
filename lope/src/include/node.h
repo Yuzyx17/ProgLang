@@ -98,7 +98,7 @@ typedef struct {
 typedef struct {
     node_t *condition;
     node_t *stmts;
-    node_t *sakali;
+    node_t *sakali_stmt;
     node_t *kundi;
 } kungNode;
 typedef struct {
@@ -173,16 +173,16 @@ node_t *program(parser_t *parser);
 node_t *stmts(parser_t *parser, node_t *parent);
 node_t *stmt(parser_t *parser);
 
-node_t *iterative_stmt(parser_t *parser);
-node_t *habang(parser_t *parser);
-node_t *para(parser_t *parser);
+node_t *iter_stmts(parser_t *parser);
+node_t *habang_stmt(parser_t *parser);
+node_t *para_stmt(parser_t *parser);
 
-node_t *conditional_stmt(parser_t *parser);
-node_t *kung(parser_t *parser);
-node_t *sakali(parser_t *parser);
-node_t *kundi(parser_t *parser);
+node_t *con_stmts(parser_t *parser);
+node_t *kung_stmt(parser_t *parser);
+node_t *sakali_stmt(parser_t *parser);
+node_t *kundi_stmt(parser_t *parser);
 
-node_t *declaration_stmt(parser_t *parser);
+node_t *dec_stmt(parser_t *parser);
 node_t *assign_stmt(parser_t *parser);
 
 node_t *io_stmts(parser_t *parser);
@@ -202,8 +202,8 @@ int _const_(parser_t *parser);
 int data_type(parser_t *parser);
 int assign_op(parser_t *parser);
 int arithemetic_op(parser_t *parser);
-int logical_op(parser_t *parser);
-int relational_op(parser_t *parser);
+int logical(parser_t *parser);
+int relational(parser_t *parser);
 int bool_op(parser_t *parser);
 int bolyan_lit(parser_t *parser);
 // Generates the token nodes
