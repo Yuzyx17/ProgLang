@@ -22,7 +22,7 @@ typedef enum {
     DEC_STMTS_GRAMMAR,
     ERROR,
     HABANG_GRAMMAR,
-    IDENTIFIER,
+    ID,
     ITER_STMTS_GRAMMAR,
     KEYWORD,
     KUNDI_GRAMMAR,

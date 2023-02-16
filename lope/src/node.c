@@ -65,7 +65,7 @@ node_t *stmt(parser_t *parser) {
         }
     }
     // <stmt> => <assign_stmts>
-    else if (check(parser, ID)) {
+    else if (check(parser, IDENTIFIER)) {
         node->value.stmt->stmt = assign_stmt(parser);
         if (check(parser, SEMI))
             parser_advance(parser);
@@ -96,14 +96,15 @@ node_t *expr(parser_t *parser) {
     node->type = EXPRESSION;
     node->value.__expression =
         (_expressionNode *)calloc(1, sizeof(_expressionNode));
-    if (check(parser, ID) || _const_(parser)) {
-        if (check(parser, ID))
+    if (check(parser, IDENTIFIER) || _const_(parser)) {
+        if (check(parser, IDENTIFIER))
             node->value.__expression->left = _identifier(parser);
         else
             node->value.__expression->left = _const(parser);
         if (check(parser, SEMI)) {
             return node;
-        } else if (operators(parser) || check(parser, ID) || _const_(parser)) {
+        } else if (operators(parser) || check(parser, IDENTIFIER) ||
+                   _const_(parser)) {
             if (operators(parser))
                 node->value.__expression->operation = _operators(parser);
             else {
@@ -119,7 +120,7 @@ node_t *expr(parser_t *parser) {
                 } else {
                     return node;
                 }
-            } else if (check(parser, ID)) {
+            } else if (check(parser, IDENTIFIER)) {
                 node->value.__expression->right = _identifier(parser);
                 if (operators(parser)) {
                     node->value.__expression->operation2 = _operators(parser);
@@ -134,7 +135,7 @@ node_t *expr(parser_t *parser) {
             return node;
         }
     } else {
-        node = error(parser, "[Expr] Missing identifier");
+        node = error(parser, "[Expr] Missing identifier or Expression");
     }
     return node;
 }
@@ -161,7 +162,7 @@ node_t *para(parser_t *parser) {
         return error(parser, "[Para] Missing Left Parenthesis");
     if (data_type(parser)) {
         node->value._para->variable = declaration_stmt(parser);
-    } else if (check(parser, ID)) {
+    } else if (check(parser, IDENTIFIER)) {
         node->value._para->variable = assign_stmt(parser);
     }
     if (!match(parser, SEMI))
@@ -170,8 +171,9 @@ node_t *para(parser_t *parser) {
     if (!match(parser, SEMI))
         return error(parser, "[Para] Missing Semi-colon");
     if (check_tokens(parser, 2, INCR, DECR) ||
-        (check(parser, ID) && (parser_advance_peek(parser)->type == INCR ||
-                               parser_advance_peek(parser)->type == DECR)))
+        (check(parser, IDENTIFIER) &&
+         (parser_advance_peek(parser)->type == INCR ||
+          parser_advance_peek(parser)->type == DECR)))
         node->value._para->iterator = unary_op(parser);
     else {
         node->value._para->iterator = assign_stmt(parser);
@@ -312,7 +314,7 @@ node_t *kuha(parser_t *parser) {
         return error(parser, "[Kuha] Missing Comma");
     if (!match(parser, ADDRESS))
         return error(parser, "[Kuha] Missing Variabe Address");
-    node->value.kuha->varAddress = parser_match(parser, ID);
+    node->value.kuha->varAddress = parser_match(parser, IDENTIFIER);
     if (!match(parser, RPAREN))
         return error(parser, "[Kuha] Missing Variable");
     if (!match(parser, SEMI))
@@ -379,7 +381,8 @@ node_t *lahad(parser_t *parser) {
         free(node);
 
         // get the identifier
-        printNode->value.printValue->identifier = parser_match(parser, ID);
+        printNode->value.printValue->identifier =
+            parser_match(parser, IDENTIFIER);
 
         if (!match(parser, RPAREN))
             return error(parser, "[Lahad] Missing Right Parenthesis");
@@ -400,7 +403,7 @@ node_t *declaration_stmt(parser_t *parser) {
     dec_node->type = DEC_STMTS_GRAMMAR;
 
     dec_node->value.declaration->dataType = _data_type(parser);
-    if (!check(parser, ID)) {
+    if (!check(parser, IDENTIFIER)) {
         dec_node = error(parser, "[Declaration] Missing identifier");
         return dec_node;
     }
@@ -409,7 +412,7 @@ node_t *declaration_stmt(parser_t *parser) {
         return dec_node;
     } else {
         if (!assign_op(parser)) {
-            if (check(parser, ID))
+            if (check(parser, IDENTIFIER))
                 return error(parser,
                              "[Declaration] Missing assignment operator");
             else
@@ -446,7 +449,7 @@ node_t *unary_op(parser_t *parser) {
     node_t *node = createNode();
     node->type = UNARY_GRAMMAR;
     node->value.unary = (unaryNode *)calloc(1, sizeof(unaryNode));
-    if (check(parser, ID)) {
+    if (check(parser, IDENTIFIER)) {
         node->value.unary->token = _identifier(parser);
         node->value.unary->operation = _operators(parser);
     } else {
@@ -473,7 +476,7 @@ node_t *_identifier(parser_t *parser) {
     }
     node_t *node = createNode();
     node->value.atom = (tokenNode *)calloc(1, sizeof(tokenNode));
-    node->type = IDENTIFIER;
+    node->type = ID;
     node->value.atom->nodeToken = parser->tok;
     parser_advance(parser);
     return node;

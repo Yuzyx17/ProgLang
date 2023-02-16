@@ -433,7 +433,7 @@ token_t *lexer_collect_id(lexer_t *lexer) {
         lexer_advance(lexer);
     }
 
-    return init_token(ID, value, lexer->l, startPos);
+    return init_token(IDENTIFIER, value, lexer->l, startPos);
 }
 
 token_t *lexer_advance_with_token(lexer_t *lexer, token_t *token) {
@@ -1061,7 +1061,7 @@ token_t *lexer_collect_keyword(lexer_t *lexer) {
             return init_token(CAPITAL, value, lexer->l, startPos);
         }
         if (flag_illegal_symbol == 0)
-            return init_token(ID, value, lexer->l, startPos);
+            return init_token(IDENTIFIER, value, lexer->l, startPos);
         else
             return init_token(UNKNOWN, value, lexer->l, startPos);
     }

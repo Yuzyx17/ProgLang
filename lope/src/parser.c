@@ -177,7 +177,7 @@ void grammarOf(node_t *node, int depth) {
         case TERMINAL:
         case OPERATORS:
         case CONST:
-        case IDENTIFIER:
+        case ID:
             printf("<%s> ", token_type[node->value.atom->nodeToken->type]);
             break;
         case HABANG_GRAMMAR:

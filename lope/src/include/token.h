@@ -3,16 +3,16 @@
 
 typedef enum {
     /* id is identifiers */
-    ID,        // [a-zA-Z]*
-    EQUALS,    // =
-    SEMI,      // ;
-    LPAREN,    // (
-    RPAREN,    // )
-    LBRACKET,  // [
-    RBRACKET,  // ]
-    LBRACE,    // {
-    RBRACE,    // }
-    COMMENT,   // #
+    IDENTIFIER,  // [a-zA-Z]*
+    EQUALS,      // =
+    SEMI,        // ;
+    LPAREN,      // (
+    RPAREN,      // )
+    LBRACKET,    // [
+    RBRACKET,    // ]
+    LBRACE,      // {
+    RBRACE,      // }
+    COMMENT,     // #
 
     /* ADD: operators */
     ADD,         // +
@@ -92,7 +92,7 @@ typedef enum {
     KUHA,       // kuha
     IBURA,      // ibura
     FROM,       // angkat
-    ADDRESS
+    ADDRESS     //&
 } type;
 typedef struct STRUCT {
     type type;
