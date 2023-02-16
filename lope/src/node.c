@@ -248,7 +248,7 @@ node_t *kung_stmt(parser_t *parser) {
     node->value._kung->stmts = stmts(parser, node);
     if (!match(parser, RBRACE))
         return error(parser, "[Kung] Missing Right Bracket");
-    node->value._kung->sakali_stmt = con_stmts(parser);
+    node->value._kung->sakali = con_stmts(parser);
     node->value._kung->kundi = con_stmts(parser);
 
     return node;

@@ -98,7 +98,7 @@ typedef struct {
 typedef struct {
     node_t *condition;
     node_t *stmts;
-    node_t *sakali_stmt;
+    node_t *sakali;
     node_t *kundi;
 } kungNode;
 typedef struct {
