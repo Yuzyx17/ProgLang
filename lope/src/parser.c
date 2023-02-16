@@ -49,7 +49,7 @@ node_t *parser_match(parser_t *parser, type token_to_match) {
     if (nullCursor(parser)) {
         return error(parser, "Token Mismatch");
     } else if (parser->tok->type == token_to_match) {
-        return _token(parser);
+        return _identifier(parser);
     } else {
         return error(parser, "Token Mismatch");
     }
@@ -63,7 +63,7 @@ node_t *parser_match_tokens(parser_t *parser, int count, ...) {
         if (nullCursor(parser)) {
             return error(parser, "End of Line");
         } else if (parser->tok->type == tok) {
-            return _token(parser);
+            return _identifier(parser);
         }
     }
     return error(parser, "Token Mismatch or Missing");

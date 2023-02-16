@@ -103,8 +103,14 @@ node_t *expr(parser_t *parser) {
             node->value.__expression->left = _const(parser);
         if (check(parser, SEMI)) {
             return node;
-        } else if (operators(parser)) {
-            node->value.__expression->operation = _operators(parser);
+        } else if (operators(parser) || check(parser, ID) || _const_(parser)) {
+            if (operators(parser))
+                node->value.__expression->operation = _operators(parser);
+            else {
+                node->value.__expression->operation =
+                    error(parser, "[Expr] Missing operator");
+                parser_recede(parser);
+            }
             if (_const_(parser)) {
                 node->value.__expression->right = _const(parser);
                 if (operators(parser)) {
@@ -188,6 +194,9 @@ node_t *habang(parser_t *parser) {
     if (!match(parser, LPAREN))
         return error(parser, "[Habang] Missing Left Paranthesis");
     node->value._habang->expr = expr(parser);
+    if (node->value._habang->expr->type == ERROR) {
+        parser_recede(parser);
+    }
     if (!match(parser, RPAREN))
         return error(parser, "[Habang] Missing Right Parenthesis");
     if (!match(parser, LBRACE))
@@ -227,6 +236,9 @@ node_t *kung(parser_t *parser) {
     if (!match(parser, LPAREN))
         return error(parser, "[Kung] Missing Left Paranthesis");
     node->value._kung->condition = expr(parser);
+    if (node->value._kung->condition->type == ERROR) {
+        parser_recede(parser);
+    }
     if (!match(parser, RPAREN))
         return error(parser, "[Kung] Missing Right Parenthesis");
     if (!match(parser, LBRACE))
@@ -397,9 +409,11 @@ node_t *declaration_stmt(parser_t *parser) {
         return dec_node;
     } else {
         if (!assign_op(parser)) {
-            return error(
-                parser,
-                "[Declaration] Missing assignment expression or Semi-colon");
+            if (check(parser, ID))
+                return error(parser,
+                             "[Declaration] Missing assignment operator");
+            else
+                return error(parser, "[Declaration] Missing Semi-colon");
         }
         dec_node->value.declaration->assignType = _operators(parser);
         dec_node->value.declaration->expr = expr(parser);
@@ -410,12 +424,12 @@ node_t *assign_stmt(parser_t *parser) {
     node_t *node = createNode();
     node->value.assgn = (assgnNode *)calloc(1, sizeof(assgnNode));
     node->type = ASSIGN_STMTS_GRAMMAR;
-    node->value.assgn->identifier = _token(parser);
+    node->value.assgn->identifier = _identifier(parser);
     if (check_tokens(parser, 2, INCR, DECR)) {
         parser_recede(parser);
         node->value.unary = (unaryNode *)calloc(1, sizeof(unaryNode));
         node->type = UNARY_GRAMMAR;
-        node->value.unary->token = _token(parser);
+        node->value.unary->token = _identifier(parser);
         node->value.unary->operation = _operators(parser);
         return node;
     }
@@ -433,8 +447,8 @@ node_t *unary_op(parser_t *parser) {
     node->type = UNARY_GRAMMAR;
     node->value.unary = (unaryNode *)calloc(1, sizeof(unaryNode));
     if (check(parser, ID)) {
-        node->value.unary->token = _token(parser);
-        node->value.unary->operation = _token(parser);
+        node->value.unary->token = _identifier(parser);
+        node->value.unary->operation = _operators(parser);
     } else {
         node->value.unary->operation = _operators(parser);
         node->value.unary->token = _identifier(parser);
@@ -486,17 +500,6 @@ node_t *_operators(parser_t *parser) {
     parser_advance(parser);
     return node;
 }
-node_t *_token(parser_t *parser) {
-    if (nullCursor(parser)) {
-        return error(parser, "End of line, expected");
-    }
-    node_t *node = createNode();
-    node->value.atom = (tokenNode *)calloc(1, sizeof(tokenNode));
-    node->type = TERMINAL;
-    node->value.atom->nodeToken = parser->tok;
-    parser_advance(parser);
-    return node;
-}
 
 node_t *error(parser_t *parser, char *errorMsg) {
     node_t *node = createNode();
@@ -504,7 +507,11 @@ node_t *error(parser_t *parser, char *errorMsg) {
     node->value.error = (errorNode *)calloc(1, sizeof(errorNode));
     node->value.error->error = errorMsg;
     if (!nullCursor(parser)) {
-        node->value.error->token = parser_previous_peek(parser);
+        node->value.error->token = parser_peek(parser);
+        if (check_tokens(parser, 3, SEMI, COMMENT_VALUE_MULTI,
+                         COMMENT_VALUE_SINGLE)) {
+            node->value.error->token = parser_previous_peek(parser);
+        }
         parser_advance(parser);
     } else
         node->value.error->token = parser_previous_peek(parser);
