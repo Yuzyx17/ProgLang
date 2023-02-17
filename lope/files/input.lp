@@ -19,10 +19,10 @@ doblenumero raw_grade = grade;  #Declared Assignment with identifier
 
 #* ASSIGNMENT *#
 
-midterm_grade = 1.16;       #Assignment by value
-raw_grade += midterm_grade; #Assignment with variable
+midterm_grade = 1.16;               #Assignment by value
+raw_grade += midterm_grade;         #Assignment with variable
 raw_grade = midterm_grade + final_grade / 2;
-                            #Assignment with expression
+                                    #Assignment with expression
 
 #* CONDITIONAL *#
 
@@ -103,7 +103,7 @@ doblenumero raw_grade grade;    #Missing assignment operator
 
 #* ASSIGNMENT *#
 
-midterm_grade 1.16;             #Misisng operator
+midterm_grade 1.16;             #Misisng assignment operator
 raw_grade += midterm_grade      #Missing Semicolon
 raw_grade = midterm_grade final_grade / 2;
                                 #Missing operator
@@ -111,14 +111,14 @@ raw_grade = midterm_grade final_grade / 2;
 #* CONDITIONAL *#
 
 
-kung grade) {                           #Missing Right Parenthesis
+kung () {                               #Missing in Expression
     lahad ("Pagbati! Ikaw ay pumasa!"); 
 }
 
 kung (grade >= 75) {
     lahad ("Pagbati! Ikaw ay pumasa!"); 
-}kundi{
-    lahad ("Bagsak ikaw!")              #Missing Semi colon
+}kundi
+    lahad ("Bagsak ikaw!");             #Missing Left Bracket
 }
 
 kung (grade >= 90) {
@@ -129,15 +129,15 @@ kung (grade >= 90) {
     lahad ("Bagsak ikaw!");
 }
 
-kung ()
+kung ()                                 #Missing in Expression
 {
     kung (grade >= 90) {
         lahad("Marka: A");
     }sakali (grade >= 80) {
         lahad "Marka: B");              #Missing Left Paranthesis
-    }sakali (grade >= 70) {
+    }sakali (grade >= 70) {             #inside the statement block
         lahad("Marka: C");               
-    }sakali grade >= 60) {              #Missing Left Paranthesis
+    }sakali (grade >= 60 {              #Missing Right Paranthesis
         lahad("Marka: D");
     }kundi {
         lahad("Marka: E");
@@ -147,11 +147,11 @@ kung ()
 }
 
 #* ITERATIVE *#
-para (num j  0; i<3; i++) {    #Missing assignmetn operator
+para (num j  0; i<3; i++) {    #Missing assignment operator
     lahad(i);
 }
 
-habang (i != 0)                #Missing Left paranthesis
+habang (i != 0)                #Missing Left Bracket
     lahad(i);
 }
 
@@ -168,7 +168,7 @@ habang (i != 0 {            #Missing Right Paranthesis
     }i--;
 }
 
-
+#*              CONSECUTIVE ERRORS              *#
 kuha();                     #Missing format
 lahad("hello world";        #Misisng Right Paranthesis
 habang){}                   #Missing Left Paranthesis

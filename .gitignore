@@ -1,5 +1,7 @@
 *.o
 *.exe
 lope/files/
+!lope/files/input.lp
 *.txt
 *.lp
+lope/files/input.lp

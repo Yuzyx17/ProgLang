@@ -349,10 +349,16 @@ int scanFile(lexer_t *lexer) {
             fprintf(output_ptr, "%s\t\t\t\t\t\t\t\t\t\t\t[%d, %d]\n",
                     token_code[tokens[x]->type], tokens[x]->lpos,
                     tokens[x]->cpos);
+            // printf("%s\t\t\t\t\t\t\t\t\t\t\t[%d, %d]\n",
+            //        token_code[tokens[x]->type], tokens[x]->lpos,
+            //        tokens[x]->cpos);
         } else {
             fprintf(output_ptr, "%s\t\t\t\t\t\t%s\t\t\t\t\t[%d, %d]\n",
                     token_code[tokens[x]->type], tokens[x]->value,
                     tokens[x]->lpos, tokens[x]->cpos);
+            // printf("%s\t\t\t\t\t\t%s\t\t\t\t\t[%d, %d]\n",
+            //        token_code[tokens[x]->type], tokens[x]->value,
+            //        tokens[x]->lpos, tokens[x]->cpos);
         }
         // printf("%d\t\t%s\t\t\t%s\t%s\t\t[%d, %d]\n", x,
         // token_code[tokens[x]->type], token_type[tokens[x]->type],
